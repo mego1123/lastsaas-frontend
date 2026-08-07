@@ -1,5 +1,6 @@
 // Import Dependencies
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   UserPlusIcon,
   UserMinusIcon,
@@ -14,7 +15,6 @@ import {
   FunnelIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
@@ -33,7 +33,6 @@ import { Spinner } from "@/components/ui/Spinner";
 import { useDebounceValue } from "@/hooks";
 import { tenantApi } from "@/utils/api";
 import type { ActivityLogEntry } from "@/@types/lastsaas";
-import { getErrorMessage } from "@/utils/errors";
 import type { ColorType } from "@/constants/app";
 
 // ----------------------------------------------------------------------
@@ -230,10 +229,7 @@ function ActionFilter({
 // ----------------------------------------------------------------------
 
 export default function ActivityPage() {
-  const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
 
   // The "committed" filter values that get sent to the API
   const [action, setAction] = useState("");
@@ -252,27 +248,21 @@ export default function ActivityPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
-  const fetchActivity = useCallback(() => {
-    setLoading(true);
-    const params: Record<string, string | number> = {
-      page,
-      perPage: PAGE_SIZE,
-    };
-    if (action) params.action = action;
-    if (search) params.search = search;
-    tenantApi
-      .getActivity(params)
-      .then((data) => {
-        setLogs(data.logs || []);
-        setTotal(data.total);
-      })
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, [page, action, search]);
-
-  useEffect(() => {
-    fetchActivity();
-  }, [fetchActivity]);
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["activity", page, action, search],
+    queryFn: () => {
+      const params: Record<string, string | number> = {
+        page,
+        perPage: PAGE_SIZE,
+      };
+      if (action) params.action = action;
+      if (search) params.search = search;
+      return tenantApi.getActivity(params);
+    },
+  });
+  const logs: ActivityLogEntry[] = data?.logs ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
