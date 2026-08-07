@@ -131,9 +131,9 @@ export default function ConfigPage() {
         {/* Header — unified title + controls in one row */}
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Configuration
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               {configs.length} variables
             </p>
@@ -452,7 +452,7 @@ function EditConfigModal({
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
             Edit: {configVar.name}
           </h2>
           <Button
@@ -661,7 +661,7 @@ function CreateConfigModal({
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Add Variable</h2>
+          <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Add Variable</h2>
           <Button
             isIcon
             variant="flat"

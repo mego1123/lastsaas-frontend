@@ -202,7 +202,7 @@ function CreateKeyModal({
   return (
     <ModalShell onClose={onClose}>
       <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
-        <h3 className="text-lg font-semibold">Create API Key</h3>
+        <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Create API Key</h3>
         <Button
           isIcon
           variant="flat"
@@ -285,7 +285,7 @@ function RevealKeyModal({
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
             <CheckIcon className="h-5 w-5 text-success" />
           </div>
-          <h3 className="text-lg font-semibold">API Key Created</h3>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">API Key Created</h3>
         </div>
         <Button
           isIcon
@@ -528,7 +528,7 @@ function APIKeysSection({ canWrite }: { canWrite: boolean }) {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error/20">
                 <ExclamationTriangleIcon className="h-5 w-5 text-error" />
               </div>
-              <h3 className="text-lg font-semibold">Delete API Key?</h3>
+              <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Delete API Key?</h3>
             </div>
             <p className="mb-2 text-sm text-gray-500 dark:text-dark-300">
               Are you sure you want to delete{" "}
@@ -596,7 +596,7 @@ function RevealSecretModal({
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/20">
             <CheckIcon className="h-5 w-5 text-success" />
           </div>
-          <h3 className="text-lg font-semibold">Webhook Created</h3>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Webhook Created</h3>
         </div>
         <Button
           isIcon
@@ -753,7 +753,7 @@ function WebhookFormModal({
   return (
     <ModalShell onClose={onClose}>
       <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
           {webhook ? "Edit Webhook" : "Create Webhook"}
         </h3>
         <Button
@@ -1026,7 +1026,7 @@ function WebhookDetailModal({
     <ModalShell onClose={onClose} maxWidth="max-w-2xl">
       <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
         <div>
-          <h3 className="text-lg font-semibold">{hook.name}</h3>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">{hook.name}</h3>
           {hook.description && (
             <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-300">
               {hook.description}
@@ -1539,7 +1539,7 @@ function WebhooksSection({ canWrite }: { canWrite: boolean }) {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-error/20">
                 <ExclamationTriangleIcon className="h-5 w-5 text-error" />
               </div>
-              <h3 className="text-lg font-semibold">Delete Webhook?</h3>
+              <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Delete Webhook?</h3>
             </div>
             <p className="mb-2 text-sm text-gray-500 dark:text-dark-300">
               Are you sure you want to delete{" "}
@@ -1592,9 +1592,9 @@ export default function APIPage() {
     <Page title="API">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="mb-8">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             API
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
             Documentation, keys, and webhook configuration
           </p>

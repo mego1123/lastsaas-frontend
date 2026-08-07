@@ -303,9 +303,9 @@ export default function TenantProfilePage() {
           </Link>
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+              <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
                 Tenant Profile
-              </h1>
+              </h2>
               <p className="text-sm text-gray-500 dark:text-dark-300">
                 {tenant.name} &middot; {tenant.slug}
               </p>
@@ -320,7 +320,7 @@ export default function TenantProfilePage() {
 
         {/* Tenant Information */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Tenant Information
           </h2>
           <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -364,7 +364,7 @@ export default function TenantProfilePage() {
 
         {/* Plan & Billing */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             <CreditCardIcon className="size-5 text-gray-400 dark:text-dark-300" />
             Plan &amp; Billing
           </h2>
@@ -486,7 +486,7 @@ export default function TenantProfilePage() {
 
         {/* Usage Credits */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-1 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-1 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             <BoltIcon className="size-5 text-primary-500 dark:text-primary-400" />
             Usage Credits
           </h2>
@@ -548,7 +548,7 @@ export default function TenantProfilePage() {
 
         {/* Account Status */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Account Status
           </h2>
           <div className="flex items-center gap-4">
@@ -577,7 +577,7 @@ export default function TenantProfilePage() {
         {/* Billing Info */}
         {tenant.billingStatus && tenant.billingStatus !== "none" && (
           <Card className="mb-6 p-6">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               <CreditCardIcon className="size-5 text-gray-400 dark:text-dark-300" />
               Stripe Subscription
             </h2>
@@ -691,7 +691,7 @@ export default function TenantProfilePage() {
             leaveTo="opacity-0 scale-95"
             className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
           >
-            <DialogTitle className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <DialogTitle className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Cancel Subscription
             </DialogTitle>
             <p className="mb-6 text-gray-700 dark:text-dark-200">
@@ -730,7 +730,7 @@ export default function TenantProfilePage() {
 
         {/* Members */}
         <Card className="p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             <UsersIcon className="size-5 text-gray-400 dark:text-dark-300" />
             Members
             <span className="text-sm font-normal text-gray-400 dark:text-dark-400">

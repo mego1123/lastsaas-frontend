@@ -155,9 +155,9 @@ export default function PromotionsPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Promotions
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               Manage Stripe promotion codes and coupons
             </p>
@@ -446,7 +446,7 @@ function EditPromotionModal({
         className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="flex items-center justify-between pb-5">
-          <h3 className="text-lg font-semibold">Edit Promotion</h3>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Edit Promotion</h3>
           <Button
             isIcon
             variant="flat"
@@ -734,7 +734,7 @@ function CreatePromotionModal({
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="flex items-center justify-between pb-5">
-          <h3 className="text-lg font-semibold">Create Promotion Code</h3>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Create Promotion Code</h3>
           <Button
             isIcon
             variant="flat"

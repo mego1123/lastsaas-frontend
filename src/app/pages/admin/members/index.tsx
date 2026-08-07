@@ -159,9 +159,9 @@ export default function RootMembersPage() {
       <Page title="Root Members">
         <div className="transition-content px-(--margin-x) pt-6 pb-8">
           <div className="mb-8">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Root Members
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               Loading…
             </p>
@@ -179,9 +179,9 @@ export default function RootMembersPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Root Members
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               {members.length} members
             </p>
@@ -338,7 +338,7 @@ export default function RootMembersPage() {
         {/* Pending Invitations */}
         {invitations.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               <ClockIcon className="h-5 w-5 text-gray-400" />
               Pending Invitations
             </h2>

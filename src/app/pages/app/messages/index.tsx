@@ -77,9 +77,9 @@ export default function MessagesPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Messages
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               {messages.length} messages
             </p>

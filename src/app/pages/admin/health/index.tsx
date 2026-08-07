@@ -109,9 +109,9 @@ export default function HealthPage() {
               <HeartIcon className="size-5 text-success dark:text-success-light" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+              <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
                 System Health
-              </h1>
+              </h2>
               <p className="text-sm text-gray-500 dark:text-dark-300">
                 Real-time server monitoring and metrics
               </p>

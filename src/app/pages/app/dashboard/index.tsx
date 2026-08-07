@@ -38,9 +38,9 @@ export default function DashboardPage() {
         )}
 
         <div className="pb-5">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Welcome back, {user?.displayName?.split(" ")[0]}
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
             {currentTenant?.tenantName} &middot;{" "}
             <span className="capitalize">{currentTenant?.role}</span>

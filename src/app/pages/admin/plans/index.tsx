@@ -194,9 +194,9 @@ export default function PlansPage() {
         {/* Header */}
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Plans
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               {plans.length} plan{plans.length !== 1 ? "s" : ""}
             </p>
@@ -476,7 +476,7 @@ export default function PlansPage() {
               <div className="flex size-10 items-center justify-center rounded-full bg-error/10">
                 <ExclamationTriangleIcon className="size-5 text-error" />
               </div>
-              <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+              <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                 Delete Plan
               </DialogTitle>
             </div>
@@ -520,7 +520,7 @@ export default function PlansPage() {
         <div className="mt-12">
           <div className="flex items-center justify-between pb-5">
             <div>
-              <h2 className="flex items-center gap-3 text-xl font-semibold text-gray-900 dark:text-dark-50">
+              <h2 className="flex items-center gap-3 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
                 <BoltIcon className="size-6 text-secondary-500 dark:text-secondary-400" />
                 Credit Bundles
               </h2>
@@ -694,7 +694,7 @@ export default function PlansPage() {
               <div className="flex size-10 items-center justify-center rounded-full bg-error/10">
                 <ExclamationTriangleIcon className="size-5 text-error" />
               </div>
-              <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+              <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                 Delete Credit Bundle
               </DialogTitle>
             </div>
@@ -955,7 +955,7 @@ function PlanFormModal({
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
       >
         <div className="flex items-center justify-between pb-5">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             {readOnly ? "View Plan" : isEdit ? "Edit Plan" : "Create Plan"}
           </DialogTitle>
           <Button
@@ -1481,7 +1481,7 @@ function BundleFormModal({
         className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
       >
         <div className="flex items-center justify-between pb-5">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             {readOnly
               ? "View Credit Bundle"
               : isEdit

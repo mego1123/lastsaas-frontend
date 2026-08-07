@@ -172,7 +172,7 @@ function FunnelTab() {
   return (
     <div>
       <div className="flex items-center justify-between pb-5">
-        <h2 className="text-lg font-semibold">Conversion Funnel</h2>
+        <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Conversion Funnel</h2>
         <RangeSelector value={range} onChange={setRange} />
       </div>
 
@@ -286,7 +286,7 @@ function KPIsTab() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold">Key Performance Indicators</h2>
+      <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Key Performance Indicators</h2>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
@@ -466,7 +466,7 @@ function RetentionTab() {
   return (
     <div>
       <div className="flex items-center justify-between pb-5">
-        <h2 className="text-lg font-semibold">Cohort Retention</h2>
+        <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Cohort Retention</h2>
         <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-dark-600 dark:bg-dark-700">
           {(["weekly", "monthly"] as const).map((g) => (
             <button
@@ -564,7 +564,7 @@ function EngagementTab() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
           Engagement (Paying Subscribers)
         </h2>
         <RangeSelector value={range} onChange={setRange} />
@@ -1226,7 +1226,7 @@ function EventsTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">Events</h2>
+          <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">Events</h2>
           <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-dark-600 dark:bg-dark-700">
             {(
               [
@@ -1333,9 +1333,9 @@ export default function PMPage() {
     <Page title="Product Analytics">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="mb-8">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Product Analytics
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
             Customer journey, KPIs, retention, and engagement
           </p>

@@ -96,9 +96,9 @@ export default function AnnouncementsPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               Announcements
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               Manage changelog and announcements for users
             </p>
@@ -309,7 +309,7 @@ function AnnouncementFormModal({
         className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
             {isEdit ? "Edit Announcement" : "New Announcement"}
           </h3>
           <Button

@@ -140,7 +140,7 @@ function KpiCard({
         </div>
         <div className="min-w-0">
           <p className="text-sm text-gray-500 dark:text-dark-300">{label}</p>
-          <p className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <p className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             {value}
           </p>
         </div>
@@ -232,9 +232,9 @@ export default function AdminDashboardPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="pb-5">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Admin Dashboard
-          </h1>
+          </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
             System overview and management
           </p>
@@ -338,7 +338,7 @@ export default function AdminDashboardPage() {
 
         {/* Charts */}
         <div className="flex items-center justify-between pb-5">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Business Metrics
           </h2>
           <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1 dark:border-dark-600 dark:bg-dark-800/50">

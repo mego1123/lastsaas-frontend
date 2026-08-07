@@ -92,7 +92,7 @@ export default function MFASetupModal({
       >
         {step === "qr" && (
           <>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h3 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Set Up Two-Factor Authentication
             </h3>
             <p className="mb-4 text-sm text-gray-500 dark:text-dark-300">
@@ -135,7 +135,7 @@ export default function MFASetupModal({
 
         {step === "verify" && (
           <>
-            <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h3 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Verify Code
             </h3>
             <p className="mb-4 text-sm text-gray-500 dark:text-dark-300">
@@ -176,7 +176,7 @@ export default function MFASetupModal({
 
         {step === "codes" && (
           <>
-            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h3 className="mb-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Recovery Codes
             </h3>
             <p className="mb-4 text-sm text-gray-500 dark:text-dark-300">

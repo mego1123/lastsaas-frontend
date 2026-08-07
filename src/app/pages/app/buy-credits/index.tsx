@@ -67,9 +67,9 @@ export default function BuyCreditsPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Buy Credits
-          </h1>
+          </h2>
           <p className="mt-1 text-gray-500 dark:text-dark-300">
             Purchase additional usage credits for your account
           </p>

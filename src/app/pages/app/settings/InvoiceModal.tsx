@@ -71,7 +71,7 @@ export default function InvoiceModal({
         className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
         <div className="flex items-center justify-between pb-5">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Invoice
           </h3>
           <button

@@ -270,9 +270,9 @@ export default function UserProfilePage() {
             <ArrowLeftIcon className="size-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
               User Profile
-            </h1>
+            </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
               {user.displayName} &middot; {user.email}
             </p>
@@ -281,7 +281,7 @@ export default function UserProfilePage() {
 
         {/* Info / Edit Section */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             User Information
           </h2>
 
@@ -368,7 +368,7 @@ export default function UserProfilePage() {
 
         {/* Status Section */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Account Status
           </h2>
           <div className="flex items-center gap-4">
@@ -396,7 +396,7 @@ export default function UserProfilePage() {
 
         {/* Memberships Section */}
         <Card className="mb-6 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Tenant Memberships
           </h2>
 
@@ -487,7 +487,7 @@ export default function UserProfilePage() {
 
           {isOwner && !isSelf && (
             <Card className="border-error/15 bg-error/5 p-6">
-              <h2 className="mb-2 text-lg font-semibold text-error">
+              <h2 className="mb-2 text-base font-medium tracking-wide text-error">
                 Danger Zone
               </h2>
               <p className="mb-4 text-sm text-gray-500 dark:text-dark-300">
@@ -539,7 +539,7 @@ export default function UserProfilePage() {
             className="scrollbar-sm relative max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
           >
             <div className="mb-4 flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+              <DialogTitle className="flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                 <ExclamationTriangleIcon className="size-5 text-error" />
                 Delete User
               </DialogTitle>

@@ -22,9 +22,9 @@ export default function BillingSuccessPage() {
     <Page title="Payment Successful">
       <div className="flex flex-col items-center justify-center py-20">
         <CheckCircle className="mb-6 h-16 w-16 text-success" />
-        <h1 className="mb-2 text-xl font-semibold text-gray-900 dark:text-dark-50">
+        <h2 className="mb-2 text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
           Payment Successful!
-        </h1>
+        </h2>
         <p className="text-gray-500 dark:text-dark-300">
           Redirecting to your plan...
         </p>

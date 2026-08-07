@@ -244,9 +244,9 @@ export default function TestEntitlementsPage() {
     <Page title="Test Entitlements">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="mb-6">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Test Entitlements
-          </h1>
+          </h2>
           <p className="mt-1 text-gray-500 dark:text-dark-300">
             Current plan:{" "}
             <span className="font-medium text-gray-900 dark:text-dark-50">
@@ -270,7 +270,7 @@ export default function TestEntitlementsPage() {
             {/* Entitlements Test Table */}
             <Card className="mb-8 overflow-hidden p-0">
               <div className="border-b border-gray-200 px-6 py-4 dark:border-dark-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+                <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                   Entitlements on Current Plan
                 </h2>
                 <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-300">
@@ -374,7 +374,7 @@ export default function TestEntitlementsPage() {
             {/* Comparison Matrix */}
             <Card className="mt-3">
               <div className="border-b border-gray-200 px-6 py-4 dark:border-dark-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+                <h2 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                   Entitlements by Plan
                 </h2>
                 <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-300">
@@ -451,7 +451,7 @@ export default function TestEntitlementsPage() {
                 <Card className="mx-4 w-full max-w-md p-6">
                   <div className="mb-4 flex items-center gap-3">
                     <BoltIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+                    <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                       {renderTemplate(promptTitle, templateVars)}
                     </h3>
                   </div>

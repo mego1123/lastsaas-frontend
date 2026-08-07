@@ -247,9 +247,9 @@ export default function PlanPage() {
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Your Plan
-          </h1>
+          </h2>
           <p className="mt-1 text-gray-500 dark:text-dark-300">
             Manage your subscription and compare available plans
           </p>
@@ -318,7 +318,7 @@ export default function PlanPage() {
                     </span>
                   )}
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+                <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
                   {currentPlan.name}
                 </h2>
                 {currentPlan.description && (
@@ -593,7 +593,7 @@ export default function PlanPage() {
         {/* Comparison Table */}
         <Card className="mt-3">
           <div className="border-b border-gray-200 px-6 py-4 dark:border-dark-600">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+            <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Plan Comparison
             </h3>
           </div>
@@ -828,7 +828,7 @@ export default function PlanPage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <AlertTriangle className="h-6 w-6 text-warning" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+                <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                   Billing Waiver Active
                 </h3>
               </div>
@@ -893,7 +893,7 @@ export default function PlanPage() {
             >
               <div className="mb-4 flex items-center gap-3">
                 <XCircle className="h-6 w-6 text-error" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+                <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
                   Cancel Subscription
                 </h3>
               </div>

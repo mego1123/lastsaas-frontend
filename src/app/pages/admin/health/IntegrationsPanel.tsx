@@ -221,7 +221,7 @@ function SetupModal({
         className="scrollbar-sm relative max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-soft transition-all dark:bg-dark-700"
       >
         <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             {help.title}
           </DialogTitle>
           <Button
@@ -331,7 +331,7 @@ function SendTestEmailModal({ onClose }: { onClose: () => void }) {
         className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
       >
         <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-dark-600">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <DialogTitle className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Send Test Email
           </DialogTitle>
           <Button
