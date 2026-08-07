@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Table,
   TBody,
@@ -189,9 +190,11 @@ export default function BillingTab() {
         </div>
 
         {transactions.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 dark:text-dark-300">
-            No transactions yet
-          </div>
+          <EmptyState
+            Icon={Receipt}
+            title="No transactions yet"
+            description="Billing transactions will appear here once they occur."
+          />
         ) : (
           <>
             <div className="min-w-full overflow-x-auto">

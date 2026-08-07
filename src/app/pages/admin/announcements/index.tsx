@@ -13,6 +13,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   XMarkIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
@@ -21,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -91,7 +93,7 @@ export default function AnnouncementsPage() {
 
   return (
     <Page title="Announcements">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
@@ -118,8 +120,12 @@ export default function AnnouncementsPage() {
             <Spinner className="h-8 w-8" color="primary" />
           </div>
         ) : announcements.length === 0 ? (
-          <Card className="p-6 text-center text-gray-500 dark:text-dark-300">
-            No announcements yet
+          <Card>
+            <EmptyState
+              Icon={MegaphoneIcon}
+              title="No announcements yet"
+              description="Announcements will appear here once published."
+            />
           </Card>
         ) : (
           <div className="space-y-4">

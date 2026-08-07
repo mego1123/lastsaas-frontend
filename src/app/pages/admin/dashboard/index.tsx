@@ -11,6 +11,7 @@ import {
   ArrowTrendingUpIcon,
   UserCircleIcon,
   PlusIcon,
+  ChartBarSquareIcon,
 } from "@heroicons/react/24/outline";
 import {
   ResponsiveContainer,
@@ -23,6 +24,7 @@ import {
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -57,9 +59,12 @@ function MetricChart({
 }) {
   if (data.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center text-sm text-gray-400 dark:text-dark-400">
-        No data yet
-      </div>
+      <EmptyState
+        Icon={ChartBarSquareIcon}
+        title="No data yet"
+        description="Chart data will appear once available."
+        className="h-40"
+      />
     );
   }
 
@@ -196,7 +201,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <Page title="Admin Dashboard">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="transition-content px-(--margin-x) pb-8">
           <div className="flex items-center justify-center py-20">
             <Spinner className="size-8" color="primary" />
           </div>
@@ -224,9 +229,9 @@ export default function AdminDashboardPage() {
 
   return (
     <Page title="Admin Dashboard">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {/* Header */}
-        <div className="mb-8 py-5">
+        <div className="py-5 lg:py-6">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Admin Dashboard
           </h1>

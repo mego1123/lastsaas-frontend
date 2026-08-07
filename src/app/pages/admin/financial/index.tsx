@@ -1,5 +1,6 @@
 // Import Dependencies
 import { useCallback, useEffect, useState } from "react";
+import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 // Local Imports
@@ -17,6 +18,7 @@ import {
   Td,
 } from "@/components/ui/Table";
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
 import type { FinancialTransaction } from "@/@types/lastsaas";
@@ -91,9 +93,9 @@ export default function AdminFinancialPage() {
 
   return (
     <Page title="Financial">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {/* Header */}
-        <div className="mb-8 py-5">
+        <div className="py-5 lg:py-6">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Financial
           </h1>
@@ -128,9 +130,11 @@ export default function AdminFinancialPage() {
         ) : (
           <Card className="mt-3">
             {transactions.length === 0 ? (
-              <div className="py-12 text-center text-gray-500 dark:text-dark-300">
-                No transactions found
-              </div>
+              <EmptyState
+                Icon={CreditCardIcon}
+                title="No transactions found"
+                description="Transactions will appear here once payments are processed."
+              />
             ) : (
               <>
                 <div className="min-w-full overflow-x-auto">

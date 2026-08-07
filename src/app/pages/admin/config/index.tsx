@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/Form/Textarea";
 import { Table, TBody, THead, Tr, Th, Td } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
@@ -126,7 +127,7 @@ export default function ConfigPage() {
 
   return (
     <Page title="Configuration">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
@@ -171,13 +172,16 @@ export default function ConfigPage() {
             </div>
           </Card>
         ) : filtered.length === 0 ? (
-          <Card className="mt-3 p-12 text-center">
-            <Cog6ToothIcon className="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-dark-400" />
-            <p className="text-gray-500 dark:text-dark-300">
-              {filter
-                ? "No matching variables"
-                : "No configuration variables"}
-            </p>
+          <Card className="mt-3">
+            <EmptyState
+              Icon={Cog6ToothIcon}
+              title={filter ? "No matching variables" : "No configuration variables"}
+              description={
+                filter
+                  ? "Try a different search term."
+                  : "Configuration variables will appear here once added."
+              }
+            />
           </Card>
         ) : (
           <Card className="mt-3">

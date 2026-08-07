@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { authApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
 import type { ActiveSession } from "@/@types/lastsaas";
@@ -91,9 +92,11 @@ export default function SessionsTab() {
             <Spinner className="h-5 w-5" color="primary" />
           </div>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-dark-300">
-            No active sessions found.
-          </p>
+          <EmptyState
+            Icon={Monitor}
+            title="No active sessions found"
+            description="Your active sessions will appear here."
+          />
         ) : (
           <div className="space-y-3">
             {sessions.map((session) => (

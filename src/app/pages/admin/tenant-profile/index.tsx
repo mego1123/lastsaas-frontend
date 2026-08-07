@@ -243,7 +243,7 @@ export default function TenantProfilePage() {
   if (fetchError || !tenant) {
     return (
       <Page title="Tenant Profile">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="transition-content px-(--margin-x) pb-8">
           <div className="py-20 text-center">
             <p className="mb-4 text-error">
               {fetchError || "Tenant not found"}
@@ -290,9 +290,9 @@ export default function TenantProfilePage() {
 
   return (
     <Page title="Tenant Profile">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {/* Header */}
-        <div className="mb-8 py-5">
+        <div className="py-5 lg:py-6">
           <Link
             to="/last/tenants"
             className="mb-4 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 dark:text-dark-300 dark:hover:text-dark-50"

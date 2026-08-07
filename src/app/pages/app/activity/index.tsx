@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { Page } from "@/components/shared/Page";
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Card,
   Avatar,
@@ -320,7 +321,7 @@ export default function ActivityPage() {
 
   return (
     <Page title="Activity">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Activity
@@ -394,11 +395,15 @@ export default function ActivityPage() {
               <Spinner className="h-8 w-8" color="primary" />
             </div>
           ) : logs.length === 0 ? (
-            <div className="py-16 text-center text-gray-500 dark:text-dark-300">
-              {hasFilters
-                ? "No activity matches your filters."
-                : "No activity recorded yet."}
-            </div>
+            <EmptyState
+              Icon={DocumentTextIcon}
+              title={hasFilters ? "No activity matches your filters" : "No activity recorded yet"}
+              description={
+                hasFilters
+                  ? "Try adjusting your search or filters."
+                  : "Activity will appear here as actions occur in your organization."
+              }
+            />
           ) : (
             <>
               <div className="max-w-2xl">

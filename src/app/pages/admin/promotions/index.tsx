@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/Form/Input";
 import { Checkbox } from "@/components/ui/Form/Checkbox";
 import { Table, TBody, THead, Tr, Th, Td } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
@@ -151,7 +152,7 @@ export default function PromotionsPage() {
 
   return (
     <Page title="Promotions">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
@@ -205,9 +206,11 @@ export default function PromotionsPage() {
         ) : (
           <Card className="mt-3">
             {promotions.length === 0 ? (
-              <div className="py-12 text-center text-gray-500 dark:text-dark-300">
-                No promotion codes yet
-              </div>
+              <EmptyState
+                Icon={TagIcon}
+                title="No promotion codes yet"
+                description="Promotion codes will appear here once created."
+              />
             ) : (
               <div className="min-w-full overflow-x-auto">
                 <Table hoverable className="w-full">

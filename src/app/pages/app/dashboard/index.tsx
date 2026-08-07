@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
   return (
     <Page title="Dashboard">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {branding.dashboardHtml && (
           <div
             className="mb-6"
@@ -37,7 +37,7 @@ export default function DashboardPage() {
           />
         )}
 
-        <div className="mb-6 py-4">
+        <div className="py-4 lg:py-5">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Welcome back, {user?.displayName?.split(" ")[0]}
           </h1>

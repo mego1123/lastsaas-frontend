@@ -32,6 +32,7 @@ import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -484,8 +485,12 @@ function RetentionTab() {
       </div>
 
       {cohorts.length === 0 ? (
-        <Card className="p-8 text-center text-gray-400 dark:text-dark-400">
-          No retention data yet
+        <Card className="mt-3">
+          <EmptyState
+            Icon={ChartBarSquareIcon}
+            title="No retention data yet"
+            description="Retention cohorts will appear here once event data is collected."
+          />
         </Card>
       ) : (
         <Card className="mt-3">
@@ -1042,10 +1047,11 @@ function FlowSubTab({
           Event Definitions
         </h3>
         {definitions.length === 0 ? (
-          <p className="text-sm text-gray-400 dark:text-dark-400">
-            No event definitions yet. Click &ldquo;Define Event&rdquo; to
-            get started.
-          </p>
+          <EmptyState
+            Icon={PlusIcon}
+            title="No event definitions yet"
+            description="Click Define Event to get started."
+          />
         ) : (
           <Table className="w-full text-sm">
             <THead>
@@ -1325,7 +1331,7 @@ export default function PMPage() {
 
   return (
     <Page title="Product Analytics">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Product Analytics

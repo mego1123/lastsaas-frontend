@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/Table";
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { adminApi } from "@/utils/api";
 import type { SystemLog, LogSeverity, LogCategory } from "@/@types/lastsaas";
 
@@ -263,9 +264,9 @@ export default function LogsPage() {
 
   return (
     <Page title="System Logs">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between py-5">
+        <div className="flex items-center justify-between py-5 lg:py-6">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               System Logs
@@ -428,11 +429,12 @@ export default function LogsPage() {
             </div>
           </Card>
         ) : logs.length === 0 ? (
-          <Card className="mt-3 p-12 text-center">
-            <DocumentTextIcon className="mx-auto mb-4 size-12 text-gray-300 dark:text-dark-500" />
-            <p className="text-gray-500 dark:text-dark-300">
-              No log entries found
-            </p>
+          <Card className="mt-3">
+            <EmptyState
+              Icon={DocumentTextIcon}
+              title="No log entries found"
+              description="Log entries will appear here as system events occur."
+            />
           </Card>
         ) : (
           <>

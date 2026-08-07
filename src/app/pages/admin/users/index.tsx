@@ -31,6 +31,7 @@ import {
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { adminApi } from "@/utils/api";
 import { ACCESS_TOKEN_KEY, IMPERSONATION_KEY, REFRESH_TOKEN_KEY } from "@/configs/auth";
 import { useAuthContext } from "@/app/contexts/auth/context";
@@ -265,9 +266,9 @@ export default function UsersPage() {
 
   return (
     <Page title="Users">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between py-5">
+        <div className="flex items-center justify-between py-5 lg:py-6">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               Users
@@ -373,9 +374,15 @@ export default function UsersPage() {
               <Spinner className="size-8" color="primary" />
             </div>
           ) : users.length === 0 ? (
-            <div className="py-16 text-center text-gray-500 dark:text-dark-300">
-              {search ? "No users match your search." : "No users yet."}
-            </div>
+            <EmptyState
+              Icon={UserCircleIcon}
+              title={search ? "No users match your search" : "No users yet"}
+              description={
+                search
+                  ? "Try a different search term or clear filters."
+                  : "Users will appear here once they sign up."
+              }
+            />
           ) : (
             <>
               <div className="min-w-full overflow-x-auto">

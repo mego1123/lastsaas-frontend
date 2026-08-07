@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
@@ -73,7 +74,7 @@ export default function MessagesPage() {
 
   return (
     <Page title="Messages">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="transition-content px-(--margin-x) pb-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
@@ -86,9 +87,12 @@ export default function MessagesPage() {
         </div>
 
         {messages.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Mail className="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-dark-500" />
-            <p className="text-gray-500 dark:text-dark-300">No messages yet</p>
+          <Card>
+            <EmptyState
+              Icon={Mail}
+              title="No messages yet"
+              description="Messages will appear here when you receive them."
+            />
           </Card>
         ) : (
           <div className="space-y-3">
