@@ -339,7 +339,7 @@ export default function ActivityPage() {
           </div>
         </div>
 
-        <Card className="px-4 pb-5 sm:px-5">
+        <Card className="px-4 pt-5 pb-5 sm:px-5">
           {/* Optional second row: when a filter is active, show a small
               summary line so the user knows what's filtered. */}
           {hasFilters && (
