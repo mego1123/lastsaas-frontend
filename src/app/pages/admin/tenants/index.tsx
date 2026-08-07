@@ -1,6 +1,7 @@
 // Import Dependencies
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ShieldCheckIcon,
   BoltIcon,
@@ -119,9 +120,6 @@ export default function TenantsPage() {
   const canWrite = role === "owner" || role === "admin";
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [tenants, setTenants] = useState<TenantListItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [sort, setSort] = useState(searchParams.get("sort") || "-createdAt");
@@ -134,30 +132,24 @@ export default function TenantsPage() {
   );
   const [statusLoading, setStatusLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const queryClient = useQueryClient();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchTenants = useCallback(
-    async (p: number, q: string, s: string, st: string, bs: string) => {
-      setLoading(true);
-      try {
-        const data = await adminApi.listTenants({
-          page: p,
-          limit: PAGE_SIZE,
-          search: q || undefined,
-          sort: s,
-          status: st || undefined,
-          billingStatus: bs || undefined,
-        });
-        setTenants(data.tenants || []);
-        setTotal(data.total);
-      } catch (err) {
-        toast.error(getErrorMessage(err));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["admin", "tenants", page, search, sort, status, billingStatus],
+    queryFn: () =>
+      adminApi.listTenants({
+        page,
+        limit: PAGE_SIZE,
+        search: search || undefined,
+        sort,
+        status: status || undefined,
+        billingStatus: billingStatus || undefined,
+      }),
+  });
+  const tenants = data?.tenants ?? [];
+  const total = data?.total ?? 0;
 
   // Sync URL params
   useEffect(() => {
@@ -170,18 +162,12 @@ export default function TenantsPage() {
     setSearchParams(params, { replace: true });
   }, [page, search, sort, status, billingStatus, setSearchParams]);
 
-  // Fetch on page/sort/filter change
-  useEffect(() => {
-    fetchTenants(page, search, sort, status, billingStatus);
-  }, [page, sort, status, billingStatus, fetchTenants]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Debounced search
+  // Debounced search — updates the 'search' state which changes the query key
   const handleSearchChange = (value: string) => {
-    setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      setSearch(value);
       setPage(1);
-      fetchTenants(1, value, sort, status, billingStatus);
     }, 300);
   };
 
@@ -225,11 +211,7 @@ export default function TenantsPage() {
     setStatusLoading(true);
     try {
       await adminApi.updateTenantStatus(tenant.id, !tenant.isActive);
-      setTenants((prev) =>
-        prev.map((t) =>
-          t.id === tenant.id ? { ...t, isActive: !t.isActive } : t,
-        ),
-      );
+      queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
       toast.success(
         `${tenant.name} ${tenant.isActive ? "disabled" : "enabled"}`,
       );
