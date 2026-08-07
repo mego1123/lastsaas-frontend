@@ -13,7 +13,6 @@ import {
   XMarkIcon,
   ShieldCheckIcon,
   ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -27,6 +26,7 @@ import { Select } from "@/components/ui/Form/Select";
 import { Textarea } from "@/components/ui/Form/Textarea";
 import { Table, TBody, THead, Tr, Th, Td } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
@@ -148,24 +148,30 @@ export default function ConfigPage() {
           )}
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <Input
-            prefix={<MagnifyingGlassIcon className="h-4 w-4" />}
-            placeholder="Filter by name or description..."
-            value={filter}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setFilter(e.target.value)
-            }
-          />
+        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
+        <div className="table-toolbar flex items-center justify-between">
+          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
+            Variables
+          </h2>
+          <div className="flex">
+            <CollapsibleSearch
+              placeholder="Filter by name or description..."
+              value={filter}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFilter(e.target.value)
+              }
+            />
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Spinner className="h-8 w-8" color="primary" />
-          </div>
+          <Card className="mt-3">
+            <div className="flex justify-center py-16">
+              <Spinner className="h-8 w-8" color="primary" />
+            </div>
+          </Card>
         ) : filtered.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="mt-3 p-12 text-center">
             <Cog6ToothIcon className="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-dark-400" />
             <p className="text-gray-500 dark:text-dark-300">
               {filter
@@ -175,7 +181,8 @@ export default function ConfigPage() {
           </Card>
         ) : (
           <Card className="mt-3">
-            <Table hoverable className="text-sm">
+            <div className="min-w-full overflow-x-auto">
+            <Table hoverable className="w-full text-sm">
               <THead>
                 <Tr>
                   <Th>Name</Th>
@@ -237,6 +244,7 @@ export default function ConfigPage() {
                 ))}
               </TBody>
             </Table>
+            </div>
           </Card>
         )}
 

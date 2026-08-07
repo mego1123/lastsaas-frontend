@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
   DocumentTextIcon,
-  MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
@@ -12,13 +11,14 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   CalendarDaysIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Form/Input";
+import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Form/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import {
@@ -29,6 +29,8 @@ import {
   Th,
   Td,
 } from "@/components/ui/Table";
+import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
+import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
 import { adminApi } from "@/utils/api";
 import type { SystemLog, LogSeverity, LogCategory } from "@/@types/lastsaas";
 
@@ -114,7 +116,6 @@ export default function LogsPage() {
   );
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
   const [userId, setUserId] = useState(searchParams.get("userId") || "");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -192,12 +193,6 @@ export default function LogsPage() {
   }, [autoRefresh, fetchLogs, fetchSeverityCounts]);
 
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setSearch(searchInput);
-  };
 
   const toggleSeverity = (sev: LogSeverity) => {
     setPage(1);
@@ -384,63 +379,56 @@ export default function LogsPage() {
           )}
         </div>
 
-        {/* Search + Filters */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-1 gap-2 sm:max-w-md"
-          >
-            <Input
-              placeholder="Search logs..."
-              prefix={<MagnifyingGlassIcon className="size-4" />}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="h-10 w-full"
-            />
-            <Button
-              type="submit"
-              color="primary"
-              className="h-10"
+        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
+        <div className="table-toolbar flex items-center justify-between">
+          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
+            System Logs
+          </h2>
+          <div className="flex items-center gap-2">
+            <ResponsiveFilter
+              buttonContent={
+                <>
+                  <FunnelIcon className="size-4" />
+                  <span>Category</span>
+                  {category && (
+                    <>
+                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
+                      <Badge className="gap-1">
+                        {categoryLabels[category as LogCategory] || category}
+                      </Badge>
+                    </>
+                  )}
+                </>
+              }
             >
-              Search
-            </Button>
-            {search && (
-              <Button
-                type="button"
-                variant="outlined"
-                color="neutral"
-                className="h-10"
-                onClick={() => {
-                  setSearchInput("");
-                  setSearch("");
-                  setPage(1);
-                }}
-              >
-                Clear
-              </Button>
-            )}
-          </form>
-
-          <Select
-            value={category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="h-10 sm:w-44"
-            data={[
-              { label: "All categories", value: "" },
-              ...Object.entries(categoryLabels).map(([val, label]) => ({
-                label,
-                value: val,
-              })),
-            ]}
-          />
+              <FilterList
+                value={category}
+                onChange={handleCategoryChange}
+                options={Object.entries(categoryLabels).map(([val, label]) => ({
+                  value: val,
+                  label,
+                }))}
+              />
+            </ResponsiveFilter>
+            <CollapsibleSearch
+              placeholder="Search logs..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Spinner className="size-8" color="primary" />
-          </div>
+          <Card className="mt-3">
+            <div className="flex items-center justify-center py-16">
+              <Spinner className="size-8" color="primary" />
+            </div>
+          </Card>
         ) : logs.length === 0 ? (
-          <Card className="p-12 text-center">
+          <Card className="mt-3 p-12 text-center">
             <DocumentTextIcon className="mx-auto mb-4 size-12 text-gray-300 dark:text-dark-500" />
             <p className="text-gray-500 dark:text-dark-300">
               No log entries found
@@ -649,5 +637,65 @@ export default function LogsPage() {
         )}
       </div>
     </Page>
+  );
+}
+
+// ----------------------------------------------------------------------
+// FilterList — single-select dropdown list used inside ResponsiveFilter.
+// Mirrors the FacedtedFilter option list markup from
+// tables/courses-datatable, but without the TanStack Table coupling.
+// ----------------------------------------------------------------------
+function FilterList({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <div className="flex max-h-80 w-56 flex-col">
+      <div className="max-h-80 overflow-y-auto py-1 outline-hidden">
+        {options.map((opt) => {
+          const isSelected = opt.value === value;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(isSelected ? "" : opt.value)}
+              className={[
+                "relative flex w-full cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-left text-xs-plus outline-hidden transition-colors",
+                isSelected
+                  ? "bg-primary-50 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300"
+                  : "text-gray-800 hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-600",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "flex size-4 shrink-0 items-center justify-center rounded border",
+                  isSelected
+                    ? "border-primary-500 bg-primary-500 text-white"
+                    : "border-gray-300 dark:border-dark-450",
+                ].join(" ")}
+              >
+                {isSelected && <XMarkIcon className="size-3" />}
+              </span>
+              <span className="block truncate">{opt.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {value && (
+        <Button
+          onClick={() => onChange("")}
+          className="w-full shrink-0 rounded-none"
+          variant="flat"
+          color="error"
+        >
+          Clear Filter
+        </Button>
+      )}
+    </div>
   );
 }

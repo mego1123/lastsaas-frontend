@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import {
-  MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
   ChevronLeftIcon,
@@ -10,6 +9,8 @@ import {
   ArrowsUpDownIcon,
   UserCircleIcon,
   ArrowDownTrayIcon,
+  FunnelIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -18,8 +19,6 @@ import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Form/Input";
-import { Select } from "@/components/ui/Form/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -30,6 +29,8 @@ import {
   Td,
 } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
+import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
 import { adminApi } from "@/utils/api";
 import { ACCESS_TOKEN_KEY, IMPERSONATION_KEY, REFRESH_TOKEN_KEY } from "@/configs/auth";
 import { useAuthContext } from "@/app/contexts/auth/context";
@@ -287,25 +288,82 @@ export default function UsersPage() {
           </Button>
         </div>
 
-        {/* Search + Filters */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Input
-            placeholder="Search by name or email..."
-            prefix={<MagnifyingGlassIcon className="size-4" />}
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="h-10 w-full sm:max-w-md"
-          />
-          <Select
-            value={status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="h-10 sm:w-44"
-            data={[
-              { label: "All statuses", value: "" },
-              { label: "Active", value: "active" },
-              { label: "Disabled", value: "disabled" },
-            ]}
-          />
+        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
+        <div className="table-toolbar flex items-center justify-between">
+          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
+            Users Table
+          </h2>
+          <div className="flex items-center gap-2">
+            <ResponsiveFilter
+              buttonContent={
+                <>
+                  <FunnelIcon className="size-4" />
+                  <span>Status</span>
+                  {status && (
+                    <>
+                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
+                      <Badge className="gap-1">
+                        {status === "active" ? "Active" : "Disabled"}
+                      </Badge>
+                    </>
+                  )}
+                </>
+              }
+            >
+              <div className="flex max-h-80 w-56 flex-col">
+                <div className="max-h-80 overflow-y-auto py-1 outline-hidden">
+                  {[
+                    { value: "active", label: "Active" },
+                    { value: "disabled", label: "Disabled" },
+                  ].map((opt) => {
+                    const isSelected = opt.value === status;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          handleStatusChange(isSelected ? "" : opt.value)
+                        }
+                        className={[
+                          "relative flex w-full cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-left text-xs-plus outline-hidden transition-colors",
+                          isSelected
+                            ? "bg-primary-50 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300"
+                            : "text-gray-800 hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-600",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "flex size-4 shrink-0 items-center justify-center rounded border",
+                            isSelected
+                              ? "border-primary-500 bg-primary-500 text-white"
+                              : "border-gray-300 dark:border-dark-450",
+                          ].join(" ")}
+                        >
+                          {isSelected && <XMarkIcon className="size-3" />}
+                        </span>
+                        <span className="block truncate">{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {status && (
+                  <Button
+                    onClick={() => handleStatusChange("")}
+                    className="w-full shrink-0 rounded-none"
+                    variant="flat"
+                    color="error"
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </div>
+            </ResponsiveFilter>
+            <CollapsibleSearch
+              placeholder="Search by name or email..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Table */}

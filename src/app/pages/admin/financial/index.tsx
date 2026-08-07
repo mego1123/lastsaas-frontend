@@ -1,6 +1,5 @@
 // Import Dependencies
 import { useCallback, useEffect, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 // Local Imports
@@ -8,7 +7,6 @@ import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Form/Input";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -18,6 +16,7 @@ import {
   Th,
   Td,
 } from "@/components/ui/Table";
+import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
 import type { FinancialTransaction } from "@/@types/lastsaas";
@@ -88,12 +87,6 @@ export default function AdminFinancialPage() {
     loadData();
   }, [loadData]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setDebouncedSearch(search);
-  };
-
   const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
@@ -109,19 +102,22 @@ export default function AdminFinancialPage() {
           </p>
         </div>
 
-        {/* Search + Filters */}
-        <form
-          onSubmit={handleSearch}
-          className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center"
-        >
-          <Input
-            placeholder="Search by description, invoice #, plan..."
-            prefix={<MagnifyingGlassIcon className="size-4" />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full sm:max-w-md"
-          />
-        </form>
+        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
+        <div className="table-toolbar flex items-center justify-between">
+          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
+            Transactions
+          </h2>
+          <div className="flex">
+            <CollapsibleSearch
+              placeholder="Search by description, invoice #, plan..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+        </div>
 
         {loading ? (
           <Card className="mt-3">
