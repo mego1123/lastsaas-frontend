@@ -4,11 +4,12 @@ import { useNavigate, useSearchParams } from "react-router";
 import {
   ShieldCheckIcon,
   BoltIcon,
-  MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ArrowsUpDownIcon,
   ArrowDownTrayIcon,
+  FunnelIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -17,8 +18,6 @@ import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Form/Input";
-import { Select } from "@/components/ui/Form/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -29,6 +28,8 @@ import {
   Td,
 } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { TableToolbar } from "@/components/shared/TableToolbar";
+import type { FilterOption } from "@/components/shared/TableToolbar";
 import { adminApi } from "@/utils/api";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { getErrorMessage } from "@/utils/errors";
@@ -254,53 +255,60 @@ export default function TenantsPage() {
               {total.toLocaleString()} total tenants
             </p>
           </div>
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={handleExport}
-            title="Download CSV"
-            className="h-9"
-          >
-            <ArrowDownTrayIcon className="size-4" />
-            CSV
-          </Button>
         </div>
 
-        {/* Search + Filters */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Input
-            placeholder="Search by name or slug..."
-            prefix={<MagnifyingGlassIcon className="size-4" />}
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="h-10 w-full sm:max-w-md"
-          />
-          <Select
-            value={status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-            className="h-10 sm:w-44"
-            data={[
-              { label: "All statuses", value: "" },
-              { label: "Active", value: "active" },
-              { label: "Disabled", value: "disabled" },
+        {/* Table with integrated toolbar */}
+        <Card className="px-4 pb-5 sm:px-5">
+          <TableToolbar
+            title="Tenants"
+            searchValue={search}
+            onSearchChange={(v) => handleSearchChange(v)}
+            searchPlaceholder="Search by name or slug..."
+            isFiltered={Boolean(search || status || billingStatus)}
+            onClearAll={() => {
+              handleSearchChange("");
+              handleStatusChange("");
+              handleBillingStatusChange("");
+            }}
+            filters={[
+              {
+                key: "status",
+                title: "Status",
+                Icon: FunnelIcon,
+                value: status,
+                onChange: (v) => handleStatusChange(v),
+                options: [
+                  { value: "active", label: "Active" },
+                  { value: "disabled", label: "Disabled" },
+                ] as FilterOption[],
+              },
+              {
+                key: "billingStatus",
+                title: "Billing",
+                Icon: CreditCardIcon,
+                value: billingStatus,
+                onChange: (v) => handleBillingStatusChange(v),
+                options: [
+                  { value: "active", label: "Active" },
+                  { value: "past_due", label: "Past Due" },
+                  { value: "canceled", label: "Canceled" },
+                  { value: "none", label: "None" },
+                ] as FilterOption[],
+              },
             ]}
+            rightSlot={
+              <Button
+                variant="outlined"
+                color="neutral"
+                onClick={handleExport}
+                title="Download CSV"
+                className="h-8 gap-2 rounded-md px-3 text-xs"
+              >
+                <ArrowDownTrayIcon className="size-4" />
+                <span>CSV</span>
+              </Button>
+            }
           />
-          <Select
-            value={billingStatus}
-            onChange={(e) => handleBillingStatusChange(e.target.value)}
-            className="h-10 sm:w-44"
-            data={[
-              { label: "All billing", value: "" },
-              { label: "Active", value: "active" },
-              { label: "Past Due", value: "past_due" },
-              { label: "Canceled", value: "canceled" },
-              { label: "None", value: "none" },
-            ]}
-          />
-        </div>
-
-        {/* Table */}
-        <Card className="mt-3">
           {loading && tenants.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />

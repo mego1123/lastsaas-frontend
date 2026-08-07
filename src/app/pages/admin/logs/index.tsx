@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
   DocumentTextIcon,
-  MagnifyingGlassIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
@@ -12,13 +11,13 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   CalendarDaysIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Form/Input";
 import { Select } from "@/components/ui/Form/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import {
@@ -29,6 +28,8 @@ import {
   Th,
   Td,
 } from "@/components/ui/Table";
+import { TableToolbar } from "@/components/shared/TableToolbar";
+import type { FilterOption } from "@/components/shared/TableToolbar";
 import { adminApi } from "@/utils/api";
 import type { SystemLog, LogSeverity, LogCategory } from "@/@types/lastsaas";
 
@@ -114,7 +115,6 @@ export default function LogsPage() {
   );
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
   const [userId, setUserId] = useState(searchParams.get("userId") || "");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -192,12 +192,6 @@ export default function LogsPage() {
   }, [autoRefresh, fetchLogs, fetchSeverityCounts]);
 
   const totalPages = Math.max(1, Math.ceil(total / perPage));
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setSearch(searchInput);
-  };
 
   const toggleSeverity = (sev: LogSeverity) => {
     setPage(1);
@@ -300,15 +294,6 @@ export default function LogsPage() {
               <ArrowPathIcon className="size-4" />
               Refresh
             </Button>
-            <Button
-              variant="outlined"
-              color="neutral"
-              className="h-9"
-              onClick={handleExport}
-            >
-              <ArrowDownTrayIcon className="size-4" />
-              CSV
-            </Button>
           </div>
         </div>
 
@@ -384,71 +369,60 @@ export default function LogsPage() {
           )}
         </div>
 
-        {/* Search + Filters */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-1 gap-2 sm:max-w-md"
-          >
-            <Input
-              placeholder="Search logs..."
-              prefix={<MagnifyingGlassIcon className="size-4" />}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="h-10 w-full"
-            />
-            <Button
-              type="submit"
-              color="primary"
-              className="h-10"
-            >
-              Search
-            </Button>
-            {search && (
+        {/* Table with integrated toolbar */}
+        <Card className="px-4 pb-5 sm:px-5">
+          <TableToolbar
+            title="Logs"
+            searchValue={search}
+            onSearchChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
+            searchPlaceholder="Search logs..."
+            isFiltered={Boolean(search || category)}
+            onClearAll={() => {
+              setSearch("");
+              handleCategoryChange("");
+            }}
+            filters={[
+              {
+                key: "category",
+                title: "Category",
+                Icon: FunnelIcon,
+                value: category,
+                onChange: (v) => handleCategoryChange(v),
+                options: Object.entries(categoryLabels).map(([val, label]) => ({
+                  value: val,
+                  label,
+                })) as FilterOption[],
+              },
+            ]}
+            rightSlot={
               <Button
-                type="button"
                 variant="outlined"
                 color="neutral"
-                className="h-10"
-                onClick={() => {
-                  setSearchInput("");
-                  setSearch("");
-                  setPage(1);
-                }}
+                onClick={handleExport}
+                title="Download CSV"
+                className="h-8 gap-2 rounded-md px-3 text-xs"
               >
-                Clear
+                <ArrowDownTrayIcon className="size-4" />
+                <span>CSV</span>
               </Button>
-            )}
-          </form>
-
-          <Select
-            value={category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="h-10 sm:w-44"
-            data={[
-              { label: "All categories", value: "" },
-              ...Object.entries(categoryLabels).map(([val, label]) => ({
-                label,
-                value: val,
-              })),
-            ]}
+            }
           />
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Spinner className="size-8" color="primary" />
-          </div>
-        ) : logs.length === 0 ? (
-          <Card className="p-12 text-center">
-            <DocumentTextIcon className="mx-auto mb-4 size-12 text-gray-300 dark:text-dark-500" />
-            <p className="text-gray-500 dark:text-dark-300">
-              No log entries found
-            </p>
-          </Card>
-        ) : (
-          <>
-            <Card className="mt-3">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Spinner className="size-8" color="primary" />
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="py-12 text-center">
+              <DocumentTextIcon className="mx-auto mb-4 size-12 text-gray-300 dark:text-dark-500" />
+              <p className="text-gray-500 dark:text-dark-300">
+                No log entries found
+              </p>
+            </div>
+          ) : (
+            <>
               <div className="min-w-full overflow-x-auto">
                 <Table hoverable className="w-full min-w-[860px]">
                   <THead>
@@ -596,10 +570,9 @@ export default function LogsPage() {
                   </TBody>
                 </Table>
               </div>
-            </Card>
 
             {/* Pagination */}
-            <div className="mt-4 flex items-center justify-between">
+            <div className="mt-4 flex items-center justify-between border-t border-gray-200 px-1 py-3 dark:border-dark-600">
               <div className="flex items-center gap-3">
                 <p className="text-sm text-gray-500 dark:text-dark-300">
                   Showing {(page - 1) * perPage + 1}–
@@ -647,6 +620,7 @@ export default function LogsPage() {
             </div>
           </>
         )}
+        </Card>
       </div>
     </Page>
   );

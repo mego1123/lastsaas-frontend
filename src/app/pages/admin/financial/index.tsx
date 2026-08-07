@@ -1,6 +1,5 @@
 // Import Dependencies
 import { useCallback, useEffect, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 // Local Imports
@@ -8,7 +7,6 @@ import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Input } from "@/components/ui/Form/Input";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -18,6 +16,7 @@ import {
   Th,
   Td,
 } from "@/components/ui/Table";
+import { TableToolbar } from "@/components/shared/TableToolbar";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
 import type { FinancialTransaction } from "@/@types/lastsaas";
@@ -88,12 +87,6 @@ export default function AdminFinancialPage() {
     loadData();
   }, [loadData]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    setDebouncedSearch(search);
-  };
-
   const totalPages = Math.ceil(total / PER_PAGE);
 
   return (
@@ -109,34 +102,31 @@ export default function AdminFinancialPage() {
           </p>
         </div>
 
-        {/* Search + Filters */}
-        <form
-          onSubmit={handleSearch}
-          className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center"
-        >
-          <Input
-            placeholder="Search by description, invoice #, plan..."
-            prefix={<MagnifyingGlassIcon className="size-4" />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-10 w-full sm:max-w-md"
+        <Card className="px-4 pb-5 sm:px-5">
+          <TableToolbar
+            title="Transactions"
+            searchValue={search}
+            onSearchChange={(v) => {
+              setSearch(v);
+              setPage(1);
+            }}
+            searchPlaceholder="Search by description, invoice #, plan..."
+            isFiltered={Boolean(search)}
+            onClearAll={() => {
+              setSearch("");
+              setPage(1);
+            }}
           />
-        </form>
-
-        {loading ? (
-          <Card className="mt-3">
+          {loading ? (
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />
             </div>
-          </Card>
-        ) : (
-          <Card className="mt-3">
-            {transactions.length === 0 ? (
-              <div className="py-12 text-center text-gray-500 dark:text-dark-300">
-                No transactions found
-              </div>
-            ) : (
-              <>
+          ) : transactions.length === 0 ? (
+            <div className="py-12 text-center text-gray-500 dark:text-dark-300">
+              No transactions found
+            </div>
+          ) : (
+            <>
                 <div className="min-w-full overflow-x-auto">
                   <Table hoverable className="w-full min-w-[860px]">
                     <THead>
@@ -222,8 +212,7 @@ export default function AdminFinancialPage() {
                 )}
               </>
             )}
-          </Card>
-        )}
+        </Card>
       </div>
     </Page>
   );

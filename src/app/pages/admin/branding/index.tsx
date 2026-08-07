@@ -26,6 +26,7 @@ import { Select } from "@/components/ui/Form/Select";
 import { Textarea } from "@/components/ui/Form/Textarea";
 import { Checkbox } from "@/components/ui/Form/Checkbox";
 import { Table, TBody, THead, Tr, Th, Td } from "@/components/ui/Table";
+import { SegmentedToggle } from "@/components/shared/SegmentedToggle";
 import {
   Dialog,
   DialogPanel,
@@ -260,28 +261,28 @@ export default function BrandingPage() {
     );
   }
 
-  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  const tabs: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     {
       key: "identity",
       label: "Identity",
-      icon: <GlobeAltIcon className="h-4 w-4" />,
+      icon: GlobeAltIcon,
     },
     {
       key: "theme",
       label: "Theme",
-      icon: <PaintBrushIcon className="h-4 w-4" />,
+      icon: PaintBrushIcon,
     },
     {
       key: "content",
       label: "Content",
-      icon: <DocumentTextIcon className="h-4 w-4" />,
+      icon: DocumentTextIcon,
     },
     {
       key: "pages",
       label: "Pages",
-      icon: <DocumentTextIcon className="h-4 w-4" />,
+      icon: DocumentTextIcon,
     },
-    { key: "media", label: "Media", icon: <PhotoIcon className="h-4 w-4" /> },
+    { key: "media", label: "Media", icon: PhotoIcon },
   ];
 
   return (
@@ -316,22 +317,17 @@ export default function BrandingPage() {
           )}
         </div>
 
-        {/* Tabs */}
-        <div className="mb-6 flex gap-1 rounded-xl border border-gray-200 bg-white p-1 dark:border-dark-600 dark:bg-dark-700">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.key
-                  ? "bg-primary-500/10 text-primary-600 dark:text-primary-400"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:text-dark-300 dark:hover:bg-dark-600/50"
-              }`}
-            >
-              {t.icon}
-              {t.label}
-            </button>
-          ))}
+        {/* Tabs — Exchange-style segmented toggle (from dashboards/crypto-1) */}
+        <div className="mb-6">
+          <SegmentedToggle
+            value={tab}
+            onChange={(v) => setTab(v as Tab)}
+            options={tabs.map((t) => ({
+              value: t.key,
+              label: t.label,
+              Icon: t.icon,
+            }))}
+          />
         </div>
 
         {/* Identity Tab */}

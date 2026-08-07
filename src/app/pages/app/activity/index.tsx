@@ -12,14 +12,13 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
-import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
-import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
+import { TableToolbar } from "@/components/shared/TableToolbar";
+import type { FilterOption } from "@/components/shared/TableToolbar";
 import {
   Card,
   Avatar,
@@ -30,7 +29,6 @@ import {
   TimelineItem,
 } from "@/components/ui";
 import { Spinner } from "@/components/ui/Spinner";
-import { useDebounceValue } from "@/hooks";
 import { tenantApi } from "@/utils/api";
 import type { ActivityLogEntry } from "@/@types/lastsaas";
 import { getErrorMessage } from "@/utils/errors";
@@ -163,86 +161,13 @@ function userInitialsFromMetadata(meta?: Record<string, unknown>): string | unde
 }
 
 // ----------------------------------------------------------------------
-// ActionFilter — mimics the FacedtedFilter visual pattern from
-// tables/courses-datatable, but with single-select behavior to match our
-// server-side single-action regex filter.
+// ActionFilter options for the TableToolbar
 // ----------------------------------------------------------------------
-function ActionFilter({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const selectedOption = ACTION_OPTIONS.find((o) => o.value === value);
-
-  return (
-    <ResponsiveFilter
-      buttonContent={
-        <>
-          <FunnelIcon className="size-4" />
-          <span>Action</span>
-          {selectedOption && (
-            <>
-              <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
-              <Badge className="gap-1">
-                <selectedOption.Icon className="size-4 stroke-1" />
-                <span>{selectedOption.label}</span>
-              </Badge>
-            </>
-          )}
-        </>
-      }
-    >
-      <div className="flex max-h-80 w-56 flex-col">
-        <div className="max-h-80 overflow-y-auto py-1 outline-hidden">
-          {ACTION_OPTIONS.map((opt) => {
-            const isSelected = opt.value === value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onChange(isSelected ? "" : opt.value)}
-                className={[
-                  "relative flex w-full cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-left text-xs-plus transition-colors outline-hidden",
-                  isSelected
-                    ? "bg-primary-50 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300"
-                    : "text-gray-800 hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-600",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "flex size-4 shrink-0 items-center justify-center rounded border",
-                    isSelected
-                      ? "border-primary-500 bg-primary-500 text-white"
-                      : "border-gray-300 dark:border-dark-450",
-                  ].join(" ")}
-                >
-                  {isSelected && <XMarkIcon className="size-3" />}
-                </span>
-                <opt.Icon className="size-4.5 stroke-1" />
-                <span className="block truncate">{opt.label}</span>
-                <span className="ml-auto truncate font-mono text-[10px] text-gray-400 dark:text-dark-400">
-                  {opt.value.split(".").pop()}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        {selectedOption && (
-          <Button
-            onClick={() => onChange("")}
-            className="w-full shrink-0 rounded-none"
-            variant="flat"
-            color="error"
-          >
-            Clear Filter
-          </Button>
-        )}
-      </div>
-    </ResponsiveFilter>
-  );
-}
+const ACTION_FILTER_OPTIONS: FilterOption[] = ACTION_OPTIONS.map((opt) => ({
+  value: opt.value,
+  label: opt.label,
+  Icon: opt.Icon,
+}));
 
 // ----------------------------------------------------------------------
 
@@ -255,19 +180,6 @@ export default function ActivityPage() {
   // The "committed" filter values that get sent to the API
   const [action, setAction] = useState("");
   const [search, setSearch] = useState("");
-
-  // The "live" search input value (what the user is typing).
-  // CollapsibleSearch writes here; we debounce 350ms before committing.
-  const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 350);
-  useEffect(() => {
-    // Only commit when the debounced value actually differs — avoids
-    // a redundant refetch on first render.
-    if (debouncedSearch !== search) {
-      setSearch(debouncedSearch);
-      setPage(1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
 
   const fetchActivity = useCallback(() => {
     setLoading(true);
@@ -298,8 +210,12 @@ export default function ActivityPage() {
     setPage(1);
   };
 
+  const handleSearchChange = (v: string) => {
+    setSearch(v);
+    setPage(1);
+  };
+
   const clearAllFilters = () => {
-    setDebouncedSearch("");
     setSearch("");
     setAction("");
     setPage(1);
@@ -331,37 +247,24 @@ export default function ActivityPage() {
         </div>
 
         <Card className="px-4 pb-5 sm:px-5">
-          {/* Header bar — mirrors CRM-Analytics UsersActivity header (h-14),
-              but now hosts the CollapsibleSearch + ActionFilter on the right
-              like the ProductsTable / courses-datatable toolbars. */}
-          <div className="flex h-14 min-w-0 flex-wrap items-center justify-between gap-2 py-3">
-            <h2 className="truncate font-medium tracking-wide text-gray-800 dark:text-dark-100">
-              Users Activity
-            </h2>
-            <div className="flex items-center gap-2">
-              <ActionFilter value={action} onChange={handleActionChange} />
-              <CollapsibleSearch
-                placeholder="Search activity..."
-                value={debouncedSearch}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setDebouncedSearch(e.target.value)
-                }
-              />
-              {hasFilters && (
-                <Button
-                  variant="flat"
-                  color="error"
-                  isIcon
-                  className="size-8 rounded-full"
-                  onClick={clearAllFilters}
-                  title="Clear all filters"
-                  aria-label="Clear all filters"
-                >
-                  <XMarkIcon className="size-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+          <TableToolbar
+            title="Users Activity"
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Search activity..."
+            isFiltered={hasFilters}
+            onClearAll={clearAllFilters}
+            filters={[
+              {
+                key: "action",
+                title: "Action",
+                Icon: FunnelIcon,
+                value: action,
+                onChange: handleActionChange,
+                options: ACTION_FILTER_OPTIONS,
+              },
+            ]}
+          />
 
           {/* Optional second row: when a filter is active, show a small
               summary line so the user knows what's filtered. */}
