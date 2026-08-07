@@ -197,10 +197,10 @@ export default function TeamPage() {
               color="primary"
               variant="filled"
               onClick={() => setShowInvite(!showInvite)}
-              className="min-h-11"
+              className="h-8 gap-2 rounded-md px-3 text-xs"
             >
-              <UserPlusIcon className="size-5" />
-              Invite Member
+              <UserPlusIcon className="size-4" />
+              <span>Invite Member</span>
             </Button>
           )}
         </div>

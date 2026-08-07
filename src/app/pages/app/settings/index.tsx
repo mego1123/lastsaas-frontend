@@ -1,5 +1,5 @@
 // Import Dependencies
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   UserCircleIcon,
   ShieldCheckIcon,
@@ -9,7 +9,7 @@ import {
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
-import { SegmentedToggle } from "@/components/shared/SegmentedToggle";
+import { Card } from "@/components/ui/Card";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useBranding } from "@/app/contexts/branding/context";
 import ProfileTab from "./ProfileTab";
@@ -18,15 +18,27 @@ import SessionsTab from "./SessionsTab";
 import BillingTab from "./BillingTab";
 
 // ----------------------------------------------------------------------
+// Settings page — redesigned to match the Tailux docs/hooks/useBoxPosition
+// layout (DemoLayout + DemoCard pattern).
+//
+// Each section (Profile, Security, Sessions, Billing) is rendered as its
+// own Card with:
+//   - px-4 pb-4 sm:px-5 padding
+//   - h-14 header with icon + title
+//   - content below
+//
+// All sections are stacked in a grid (grid-cols-1 gap-4 sm:gap-5 lg:gap-6),
+// not behind tabs — so everything is visible on one scrollable page.
+// ----------------------------------------------------------------------
 
-type TabKey = "profile" | "security" | "sessions" | "billing";
+type SectionKey = "profile" | "security" | "sessions" | "billing";
 
-const TAB_ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
-  profile: UserCircleIcon,
-  security: ShieldCheckIcon,
-  sessions: ClockIcon,
-  billing: CreditCardIcon,
-};
+interface Section {
+  key: SectionKey;
+  title: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  Component: React.ComponentType;
+}
 
 export default function SettingsPage() {
   const { user } = useAuthContext();
@@ -36,24 +48,45 @@ export default function SettingsPage() {
   const showMfaSection = mfaConfigEnabled || user?.totpEnabled;
   const showSecurityTab = passkeysEnabled || showMfaSection;
 
-  const tabs = useMemo(
+  const sections = useMemo<Section[]>(
     () =>
       [
-        { key: "profile" as const, label: "Profile" },
+        {
+          key: "profile",
+          title: "Profile",
+          Icon: UserCircleIcon,
+          Component: ProfileTab,
+        },
         ...(showSecurityTab
-          ? [{ key: "security" as const, label: "Security" }]
+          ? [
+              {
+                key: "security" as const,
+                title: "Security",
+                Icon: ShieldCheckIcon,
+                Component: SecurityTab,
+              },
+            ]
           : []),
-        { key: "sessions" as const, label: "Sessions" },
-        { key: "billing" as const, label: "Billing" },
+        {
+          key: "sessions",
+          title: "Sessions",
+          Icon: ClockIcon,
+          Component: SessionsTab,
+        },
+        {
+          key: "billing",
+          title: "Billing",
+          Icon: CreditCardIcon,
+          Component: BillingTab,
+        },
       ],
     [showSecurityTab],
   );
 
-  const [tab, setTab] = useState<TabKey>("profile");
-
   return (
     <Page title="Settings">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header */}
         <div className="pb-5">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Settings
@@ -63,24 +96,25 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Tab Navigation — Exchange-style segmented toggle
-            (from dashboards/crypto-1) */}
-        <div className="pb-5">
-          <SegmentedToggle
-            value={tab}
-            onChange={(v) => setTab(v as TabKey)}
-            options={tabs.map((t) => ({
-              value: t.key,
-              label: t.label,
-              Icon: TAB_ICONS[t.key],
-            }))}
-          />
+        {/* Sections — each in its own Card with h-14 header
+            (DemoLayout + DemoCard pattern from docs/hooks/useBoxPosition) */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+          {sections.map(({ key, title, Icon, Component }) => (
+            <Card key={key} className="px-4 pb-4 sm:px-5">
+              {/* Card header — h-14, matches DemoCard header */}
+              <header className="flex h-14 items-center gap-3 py-3">
+                <Icon className="size-5 text-gray-500 dark:text-dark-300" />
+                <h2 className="truncate font-medium tracking-wide text-gray-800 dark:text-dark-100">
+                  {title}
+                </h2>
+              </header>
+              {/* Card content */}
+              <div className="mt-1">
+                <Component />
+              </div>
+            </Card>
+          ))}
         </div>
-
-        {tab === "profile" && <ProfileTab />}
-        {tab === "security" && <SecurityTab />}
-        {tab === "sessions" && <SessionsTab />}
-        {tab === "billing" && <BillingTab />}
       </div>
     </Page>
   );

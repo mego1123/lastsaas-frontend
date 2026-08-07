@@ -23,7 +23,6 @@ import { ResponsiveFilter } from "@/components/shared/table/ResponsiveFilter";
 import { EmptyState } from "@/components/shared/EmptyState";
 import {
   Card,
-  Avatar,
   Badge,
   Button,
   Tag,
@@ -145,23 +144,6 @@ const SEVERITY_TAG_COLOR: Record<string, ColorType> = {
   low: "info",
   debug: "neutral",
 };
-
-// Pull the user's display info out of the log entry's metadata, if present.
-function userInitialsFromMetadata(meta?: Record<string, unknown>): string | undefined {
-  if (!meta) return undefined;
-  const email = typeof meta.email === "string" ? meta.email : undefined;
-  if (email) {
-    const name = email.split("@")[0];
-    return name
-      .split(/[._-]/)
-      .map((s) => s[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  }
-  return undefined;
-}
 
 // ----------------------------------------------------------------------
 // ActionFilter — mimics the FacedtedFilter visual pattern from
@@ -404,12 +386,14 @@ export default function ActivityPage() {
                 <Timeline pointSize="1.5rem">
                   {styledLogs.map(({ log, style }) => {
                     const { Icon, color, title } = style;
-                    const initials = userInitialsFromMetadata(log.metadata);
                     return (
                       <TimelineItem
                         key={log.id}
                         title={title}
                         time={new Date(log.createdAt).getTime()}
+                        classNames={{
+                          contentWrapper: "ltr:pl-6 sm:ltr:pl-10 rtl:pr-6 sm:rtl:pr-10",
+                        }}
                         point={
                           <div
                             className={`timeline-item-point this:${color} text-this dark:text-this-light relative flex shrink-0 items-center justify-center rounded-full border border-current`}
@@ -422,18 +406,6 @@ export default function ActivityPage() {
                         <p className="text-sm text-gray-700 dark:text-dark-100">
                           {log.message}
                         </p>
-
-                        {/* Avatar if we can derive an identity from metadata */}
-                        {initials && (
-                          <Avatar
-                            size={8}
-                            name={initials}
-                            initialColor={color}
-                            classNames={{
-                              root: "mt-2",
-                            }}
-                          />
-                        )}
 
                         {/* Tag chips: action + severity */}
                         <div className="mt-3 flex flex-wrap gap-1.5">
