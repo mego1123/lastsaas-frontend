@@ -1,6 +1,7 @@
 // Import Dependencies
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -140,9 +141,6 @@ export default function UsersPage() {
   const isOwner = role === "owner";
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [users, setUsers] = useState<UserListItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [sort, setSort] = useState(searchParams.get("sort") || "-createdAt");
@@ -150,29 +148,23 @@ export default function UsersPage() {
   const [statusTarget, setStatusTarget] = useState<UserListItem | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const queryClient = useQueryClient();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchUsers = useCallback(
-    async (p: number, q: string, s: string, st: string) => {
-      setLoading(true);
-      try {
-        const data = await adminApi.listUsers({
-          page: p,
-          limit: PAGE_SIZE,
-          search: q || undefined,
-          sort: s,
-          status: st || undefined,
-        });
-        setUsers(data.users || []);
-        setTotal(data.total);
-      } catch (err) {
-        toast.error(getErrorMessage(err));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["admin", "users", page, search, sort, status],
+    queryFn: () =>
+      adminApi.listUsers({
+        page,
+        limit: PAGE_SIZE,
+        search: search || undefined,
+        sort,
+        status: status || undefined,
+      }),
+  });
+  const users = data?.users ?? [];
+  const totalUsers = data?.total ?? 0;
 
   // Sync URL params
   useEffect(() => {
@@ -184,18 +176,12 @@ export default function UsersPage() {
     setSearchParams(params, { replace: true });
   }, [page, search, sort, status, setSearchParams]);
 
-  // Fetch on page/sort/status change
-  useEffect(() => {
-    fetchUsers(page, search, sort, status);
-  }, [page, sort, status, fetchUsers]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Debounced search
+  // Debounced search — updates the `search` state which changes the query key
   const handleSearchChange = (value: string) => {
-    setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      setSearch(value);
       setPage(1);
-      fetchUsers(1, value, sort, status);
     }, 300);
   };
 
@@ -232,11 +218,7 @@ export default function UsersPage() {
     setStatusLoading(true);
     try {
       await adminApi.updateUserStatus(user.id, !user.isActive);
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === user.id ? { ...u, isActive: !u.isActive } : u,
-        ),
-      );
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success(
         `${user.displayName} ${user.isActive ? "disabled" : "enabled"}`,
       );
@@ -262,7 +244,7 @@ export default function UsersPage() {
     }
   };
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
 
   return (
     <Page title="Users">
@@ -274,7 +256,7 @@ export default function UsersPage() {
               Users
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-              {total.toLocaleString()} total users
+              {totalUsers.toLocaleString()} total users
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -513,7 +495,7 @@ export default function UsersPage() {
               <Pagination
                 page={page}
                 totalPages={totalPages}
-                total={total}
+                total={totalUsers}
                 onChange={setPage}
               />
             </>
