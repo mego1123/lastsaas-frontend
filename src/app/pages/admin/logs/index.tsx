@@ -1,0 +1,653 @@
+// Import Dependencies
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+import {
+  DocumentTextIcon,
+  MagnifyingGlassIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CalendarDaysIcon,
+} from "@heroicons/react/24/outline";
+
+// Local Imports
+import { Page } from "@/components/shared/Page";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Form/Input";
+import { Select } from "@/components/ui/Form/Select";
+import { Spinner } from "@/components/ui/Spinner";
+import {
+  Table,
+  TBody,
+  THead,
+  Tr,
+  Th,
+  Td,
+} from "@/components/ui/Table";
+import { adminApi } from "@/utils/api";
+import type { SystemLog, LogSeverity, LogCategory } from "@/@types/lastsaas";
+
+// ----------------------------------------------------------------------
+
+const severityConfig: Record<
+  LogSeverity,
+  {
+    label: string;
+    color: "error" | "warning" | "primary" | "secondary" | "neutral";
+    bg: string;
+    text: string;
+  }
+> = {
+  critical: {
+    label: "Critical",
+    color: "error",
+    bg: "bg-error/10",
+    text: "text-error",
+  },
+  high: {
+    label: "High",
+    color: "warning",
+    bg: "bg-warning/10",
+    text: "text-warning",
+  },
+  medium: {
+    label: "Medium",
+    color: "warning",
+    bg: "bg-warning/10",
+    text: "text-warning",
+  },
+  low: {
+    label: "Low",
+    color: "primary",
+    bg: "bg-primary-500/10",
+    text: "text-primary-500 dark:text-primary-400",
+  },
+  debug: {
+    label: "Debug",
+    color: "neutral",
+    bg: "bg-gray-200/50 dark:bg-dark-700/50",
+    text: "text-gray-500 dark:text-dark-300",
+  },
+};
+
+const categoryLabels: Record<LogCategory, string> = {
+  auth: "Auth",
+  billing: "Billing",
+  admin: "Admin",
+  system: "System",
+  security: "Security",
+  tenant: "Tenant",
+};
+
+const DATE_PRESETS = [
+  { label: "Last hour", hours: 1 },
+  { label: "Last 24h", hours: 24 },
+  { label: "Last 7d", hours: 168 },
+  { label: "Last 30d", hours: 720 },
+];
+
+const ALL_SEVERITIES: LogSeverity[] = [
+  "critical",
+  "high",
+  "medium",
+  "low",
+  "debug",
+];
+
+const PER_PAGE_OPTIONS = [25, 50, 100];
+
+// ----------------------------------------------------------------------
+
+export default function LogsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(50);
+  const [activeSeverities, setActiveSeverities] = useState<Set<LogSeverity>>(
+    () => new Set(ALL_SEVERITIES),
+  );
+  const [category, setCategory] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [userId, setUserId] = useState(searchParams.get("userId") || "");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [severityCounts, setSeverityCounts] = useState<
+    Record<string, number>
+  >({});
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchLogs = useCallback(async () => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setLoading(true);
+    try {
+      const params: Record<string, string | number> = { page, perPage };
+      if (activeSeverities.size > 0 && activeSeverities.size < 5) {
+        params.severity = Array.from(activeSeverities).join(",");
+      }
+      if (category) params.category = category;
+      if (search) params.search = search;
+      if (userId) params.userId = userId;
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+      const data = await adminApi.listLogs(params);
+      if (!controller.signal.aborted) {
+        setLogs(data.logs);
+        setTotal(data.total);
+      }
+    } catch {
+      // ignore
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [page, perPage, activeSeverities, category, search, userId, fromDate, toDate]);
+
+  const fetchSeverityCounts = useCallback(async () => {
+    try {
+      const params: Record<string, string> = {};
+      if (category) params.category = category;
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+      const data = await adminApi.logSeverityCounts(params);
+      setSeverityCounts(data.counts);
+    } catch {
+      // ignore
+    }
+  }, [category, fromDate, toDate]);
+
+  useEffect(() => {
+    void fetchLogs();
+  }, [fetchLogs]);
+  useEffect(() => {
+    void fetchSeverityCounts();
+  }, [fetchSeverityCounts]);
+
+  // Auto-refresh (pauses when tab is in background)
+  useEffect(() => {
+    if (!autoRefresh) return;
+
+    const tick = () => {
+      if (document.visibilityState === "visible") {
+        void fetchLogs();
+        void fetchSeverityCounts();
+      }
+    };
+    autoRefreshRef.current = setInterval(tick, 10000);
+    return () => {
+      if (autoRefreshRef.current) clearInterval(autoRefreshRef.current);
+    };
+  }, [autoRefresh, fetchLogs, fetchSeverityCounts]);
+
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    setSearch(searchInput);
+  };
+
+  const toggleSeverity = (sev: LogSeverity) => {
+    setPage(1);
+    setActiveSeverities((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) {
+        next.delete(sev);
+        // Deselecting the last one re-selects all
+        if (next.size === 0) return new Set(ALL_SEVERITIES);
+      } else {
+        next.add(sev);
+      }
+      return next;
+    });
+  };
+
+  const handleCategoryChange = (cat: string) => {
+    setPage(1);
+    setCategory(cat);
+  };
+
+  const clearUserFilter = () => {
+    setUserId("");
+    setPage(1);
+    setSearchParams({});
+  };
+
+  const applyDatePreset = (hours: number) => {
+    const now = new Date();
+    const from = new Date(now.getTime() - hours * 60 * 60 * 1000);
+    setFromDate(from.toISOString());
+    setToDate("");
+    setPage(1);
+  };
+
+  const clearDateFilter = () => {
+    setFromDate("");
+    setToDate("");
+    setPage(1);
+  };
+
+  const handleExport = async () => {
+    try {
+      const params: Record<string, string> = {};
+      if (activeSeverities.size > 0 && activeSeverities.size < 5) {
+        params.severity = Array.from(activeSeverities).join(",");
+      }
+      if (category) params.category = category;
+      if (search) params.search = search;
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+      const blob = await adminApi.exportLogsCSV(params);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "system_logs.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleRefresh = () => {
+    void fetchLogs();
+    void fetchSeverityCounts();
+  };
+
+  return (
+    <Page title="System Logs">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between py-5">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+              System Logs
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
+              {total.toLocaleString()} entries
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={autoRefresh ? "filled" : "outlined"}
+              color={autoRefresh ? "primary" : "neutral"}
+              className="h-9"
+              onClick={() => setAutoRefresh((a) => !a)}
+            >
+              <ArrowPathIcon
+                className={`size-4 ${autoRefresh ? "animate-spin" : ""}`}
+              />
+              Auto
+            </Button>
+            <Button
+              variant="outlined"
+              color="neutral"
+              className="h-9"
+              onClick={handleRefresh}
+            >
+              <ArrowPathIcon className="size-4" />
+              Refresh
+            </Button>
+            <Button
+              variant="outlined"
+              color="neutral"
+              className="h-9"
+              onClick={handleExport}
+            >
+              <ArrowDownTrayIcon className="size-4" />
+              CSV
+            </Button>
+          </div>
+        </div>
+
+        {/* Severity multi-select toggles */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          {ALL_SEVERITIES.map((sev) => {
+            const count = severityCounts[sev] || 0;
+            const cfg = severityConfig[sev];
+            const isActive = activeSeverities.has(sev);
+            return (
+              <button
+                key={sev}
+                onClick={() => toggleSeverity(sev)}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  isActive
+                    ? `${cfg.bg} ${cfg.text} border-current`
+                    : "border-gray-200 bg-gray-100 text-gray-400 line-through dark:border-dark-600 dark:bg-dark-700/50 dark:text-dark-500"
+                }`}
+              >
+                {cfg.label}
+                {count > 0 ? `: ${count.toLocaleString()}` : ""}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active user filter chip */}
+        {userId && (
+          <div className="mb-4 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg border border-primary-500/20 bg-primary-500/10 px-3 py-1.5 text-sm text-primary-500 dark:text-primary-400">
+              Filtered by user:{" "}
+              <span className="font-mono">{userId.slice(-8)}</span>
+              <button
+                onClick={clearUserFilter}
+                className="ml-1 hover:text-gray-900 dark:hover:text-dark-50"
+                aria-label="Clear user filter"
+              >
+                <XMarkIcon className="size-3.5" />
+              </button>
+            </span>
+          </div>
+        )}
+
+        {/* Date range */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <CalendarDaysIcon className="size-4 text-gray-400 dark:text-dark-400" />
+          {DATE_PRESETS.map((p) => (
+            <button
+              key={p.hours}
+              onClick={() => applyDatePreset(p.hours)}
+              className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+                fromDate &&
+                !toDate &&
+                Math.abs(
+                  new Date().getTime() -
+                    new Date(fromDate).getTime() -
+                    p.hours * 3600000,
+                ) < 60000
+                  ? "border-primary-500/50 bg-primary-500/10 text-primary-500 dark:text-primary-400"
+                  : "border-gray-200 bg-gray-100 text-gray-500 hover:text-gray-900 dark:border-dark-600 dark:bg-dark-700 dark:text-dark-300 dark:hover:text-dark-50"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+          {fromDate && (
+            <button
+              onClick={clearDateFilter}
+              className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-500 transition-colors hover:text-gray-900 dark:border-dark-600 dark:text-dark-300 dark:hover:text-dark-50"
+            >
+              Clear dates
+            </button>
+          )}
+        </div>
+
+        {/* Search + Filters */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <form
+            onSubmit={handleSearch}
+            className="flex flex-1 gap-2 sm:max-w-md"
+          >
+            <Input
+              placeholder="Search logs..."
+              prefix={<MagnifyingGlassIcon className="size-4" />}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="h-10 w-full"
+            />
+            <Button
+              type="submit"
+              color="primary"
+              className="h-10"
+            >
+              Search
+            </Button>
+            {search && (
+              <Button
+                type="button"
+                variant="outlined"
+                color="neutral"
+                className="h-10"
+                onClick={() => {
+                  setSearchInput("");
+                  setSearch("");
+                  setPage(1);
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </form>
+
+          <Select
+            value={category}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="h-10 sm:w-44"
+            data={[
+              { label: "All categories", value: "" },
+              ...Object.entries(categoryLabels).map(([val, label]) => ({
+                label,
+                value: val,
+              })),
+            ]}
+          />
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Spinner className="size-8" color="primary" />
+          </div>
+        ) : logs.length === 0 ? (
+          <Card className="p-12 text-center">
+            <DocumentTextIcon className="mx-auto mb-4 size-12 text-gray-300 dark:text-dark-500" />
+            <p className="text-gray-500 dark:text-dark-300">
+              No log entries found
+            </p>
+          </Card>
+        ) : (
+          <>
+            <Card className="mt-3">
+              <div className="min-w-full overflow-x-auto">
+                <Table hoverable className="w-full min-w-[860px]">
+                  <THead>
+                    <Tr>
+                      <Th className="w-10" />
+                      <Th className="w-44">Timestamp</Th>
+                      <Th className="w-24">Severity</Th>
+                      <Th className="w-24">Category</Th>
+                      <Th className="w-20">User</Th>
+                      <Th>Message</Th>
+                    </Tr>
+                  </THead>
+                  <TBody>
+                    {logs.map((log) => {
+                      const sev =
+                        severityConfig[log.severity] ||
+                        severityConfig.debug;
+                      const isExpanded = expandedRow === log.id;
+                      return (
+                        <>
+                          <Tr
+                            key={log.id}
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setExpandedRow(isExpanded ? null : log.id)
+                            }
+                          >
+                            <Td>
+                              {isExpanded ? (
+                                <ChevronUpIcon className="size-3.5" />
+                              ) : (
+                                <ChevronDownIcon className="size-3.5" />
+                              )}
+                            </Td>
+                            <Td className="font-mono">
+                              {new Date(log.createdAt).toLocaleString()}
+                            </Td>
+                            <Td>
+                              <span
+                                className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${sev.bg} ${sev.text}`}
+                              >
+                                {sev.label}
+                              </span>
+                            </Td>
+                            <Td>
+                              {log.category ? (
+                                <span className="inline-block rounded bg-gray-200/50 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-dark-700/50 dark:text-dark-200">
+                                  {categoryLabels[log.category] ||
+                                    log.category}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-400 dark:text-dark-400">
+                                  —
+                                </span>
+                              )}
+                            </Td>
+                            <Td>
+                              {log.userId ? (
+                                <Link
+                                  to={`/last/users/${log.userId}`}
+                                  className="font-mono text-xs text-primary-500 hover:text-primary-600 dark:text-primary-400"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {log.userId.slice(-8)}
+                                </Link>
+                              ) : (
+                                <span className="text-xs text-gray-400 dark:text-dark-400">
+                                  System
+                                </span>
+                              )}
+                            </Td>
+                            <Td>
+                              {log.message}
+                            </Td>
+                          </Tr>
+                          {isExpanded && (
+                            <Tr
+                              key={`${log.id}-detail`}
+                              className="bg-gray-100 dark:bg-dark-600/30"
+                            >
+                              <Td colSpan={6} className="px-8 py-4">
+                                <div className="space-y-2 text-sm">
+                                  <div>
+                                    <span className="text-gray-500 dark:text-dark-300">
+                                      Full message:{" "}
+                                    </span>
+                                    <span className="break-all text-gray-700 dark:text-dark-200">
+                                      {log.message}
+                                    </span>
+                                  </div>
+                                  {log.action && (
+                                    <div>
+                                      <span className="text-gray-500 dark:text-dark-300">
+                                        Action:{" "}
+                                      </span>
+                                      <span className="font-mono text-gray-700 dark:text-dark-200">
+                                        {log.action}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {log.tenantId && (
+                                    <div>
+                                      <span className="text-gray-500 dark:text-dark-300">
+                                        Tenant:{" "}
+                                      </span>
+                                      <Link
+                                        to={`/last/tenants/${log.tenantId}`}
+                                        className="font-mono text-xs text-primary-500 hover:text-primary-600 dark:text-primary-400"
+                                      >
+                                        {log.tenantId}
+                                      </Link>
+                                    </div>
+                                  )}
+                                  {log.userId && (
+                                    <div>
+                                      <span className="text-gray-500 dark:text-dark-300">
+                                        User:{" "}
+                                      </span>
+                                      <Link
+                                        to={`/last/users/${log.userId}`}
+                                        className="font-mono text-xs text-primary-500 hover:text-primary-600 dark:text-primary-400"
+                                      >
+                                        {log.userId}
+                                      </Link>
+                                    </div>
+                                  )}
+                                  {log.metadata &&
+                                    Object.keys(log.metadata).length > 0 && (
+                                      <div>
+                                        <span className="text-gray-500 dark:text-dark-300">
+                                          Metadata:{" "}
+                                        </span>
+                                        <pre className="mt-1 overflow-x-auto rounded bg-gray-200 p-2 text-xs text-gray-700 dark:bg-dark-700 dark:text-dark-200">
+                                          {JSON.stringify(log.metadata, null, 2)}
+                                        </pre>
+                                      </div>
+                                    )}
+                                </div>
+                              </Td>
+                            </Tr>
+                          )}
+                        </>
+                      );
+                    })}
+                  </TBody>
+                </Table>
+              </div>
+            </Card>
+
+            {/* Pagination */}
+            <div className="mt-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-gray-500 dark:text-dark-300">
+                  Showing {(page - 1) * perPage + 1}–
+                  {Math.min(page * perPage, total)} of{" "}
+                  {total.toLocaleString()}
+                </p>
+                <Select
+                  value={String(perPage)}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="h-7 text-xs"
+                  data={PER_PAGE_OPTIONS.map((n) => ({
+                    label: `${n} / page`,
+                    value: String(n),
+                  }))}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outlined"
+                  color="neutral"
+                  className="h-9"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeftIcon className="size-4" />
+                  Prev
+                </Button>
+                <span className="text-sm text-gray-500 dark:text-dark-300">
+                  {page} / {totalPages}
+                </span>
+                <Button
+                  variant="outlined"
+                  color="neutral"
+                  className="h-9"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                  <ChevronRightIcon className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </Page>
+  );
+}

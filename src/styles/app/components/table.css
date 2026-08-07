@@ -1,0 +1,74 @@
+/* ----------------------------------------------------------------------------
+ * Table styles — aligned with the Tailux Basic Table pattern
+ * (src/app/pages/tables/react-table/Basic.tsx in the Tailux template).
+ *
+ * Baking the header background, row border, and corner rounding into the
+ * default `.table-*` selectors means every <Table> in the app renders with
+ * the same look as the template's Basic Table without needing each page to
+ * repeat the long className string.
+ * -------------------------------------------------------------------------- */
+
+/* Default table alignment — explicit left (rtl: right) like the template. */
+.table {
+  @apply text-left rtl:text-right;
+}
+
+/* Hover & zebra striping */
+.table.is-hoverable
+  > .table-tbody
+  > .table-tr:hover:not(.row-selected)
+  > .table-td,
+.table.is-zebra > .table-tbody > .table-tr:nth-child(even) > .table-td {
+  @apply bg-gray-100 dark:bg-surface-2/50;
+}
+
+/* Cell padding */
+.table-td,
+.table-th {
+  @apply whitespace-nowrap px-4 py-3 sm:px-5;
+}
+
+/* Sticky header */
+.table.is-sticky .table-thead {
+  @apply sticky top-0 z-3;
+}
+
+/* Dense mode */
+.table.is-dense > .table-tbody > .table-tr > .table-td {
+  @apply px-2 py-1.5;
+}
+.table.is-dense > .table-thead > .table-tr > .table-th {
+  @apply px-2;
+}
+
+/* ----------------------------------------------------------------------------
+ * Basic Table header — gray background, bold text, rounded top corners that
+ * match the Card's `rounded-lg`. Mirrors the Th className from
+ * Basic.tsx: bg-gray-200 font-semibold text-gray-800 uppercase
+ *            dark:bg-dark-800 dark:text-dark-100
+ *            first:ltr:rounded-tl-lg last:ltr:rounded-tr-lg
+ *            first:rtl:rounded-tr-lg last:rtl:rounded-tl-lg
+ * -------------------------------------------------------------------------- */
+.table-th {
+  @apply bg-gray-200 font-semibold uppercase text-gray-800 dark:bg-dark-800 dark:text-dark-100;
+}
+.table-thead > .table-tr > .table-th:first-child {
+  @apply ltr:rounded-tl-lg rtl:rounded-tr-lg;
+}
+.table-thead > .table-tr > .table-th:last-child {
+  @apply ltr:rounded-tr-lg rtl:rounded-tl-lg;
+}
+
+/* ----------------------------------------------------------------------------
+ * Basic Table body rows — subtle bottom border, transparent top border to
+ * keep row heights stable, no border on the last row. Mirrors the Tr
+ * className from Basic.tsx:
+ *   border-y border-transparent border-b-gray-200 dark:border-b-dark-500
+ *   last:border-none
+ * -------------------------------------------------------------------------- */
+.table-tbody > .table-tr {
+  @apply border-y border-transparent border-b-gray-200 dark:border-b-dark-500;
+}
+.table-tbody > .table-tr:last-child {
+  @apply border-none;
+}
