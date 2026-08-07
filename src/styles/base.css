@@ -3,6 +3,14 @@ html {
   @apply h-full [--surface-1:var(--color-dark-450)] [--surface-2:var(--color-dark-500)] [--surface-3:var(--color-dark-600)] [-webkit-tap-highlight-color:transparent] [text-rendering:optimizeLegibility];
 }
 
+/* Preload class — disables all CSS transitions on initial page load to
+   prevent the layout flash where content renders full-width then animates
+   to the correct (sidebar-offset) position. Removed after first paint. */
+.preload,
+.preload * {
+  @apply !transition-none;
+}
+
 html[data-card-skin="bordered"] {
   @apply [--surface-1:var(--color-dark-500)] [--surface-2:var(--color-dark-600)] [--surface-3:var(--color-dark-700)];
 }
