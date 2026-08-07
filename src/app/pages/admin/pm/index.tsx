@@ -444,7 +444,10 @@ function RetentionTab() {
   }
   const cohorts = (data?.cohorts ?? []) as CohortRow[];
 
-  const cellColor = (pct: number) => {
+  // Color helper for retention cells (currently unused but kept for future
+  // heatmap-style rendering). Prefix with underscore so eslint/tsc don't
+  // flag it as an unused variable.
+  const _cellColor = (pct: number) => {
     if (pct >= 80)
       return "bg-success/30 text-success dark:bg-success/30 dark:text-success";
     if (pct >= 60)
@@ -455,6 +458,7 @@ function RetentionTab() {
       return "bg-orange-500/20 text-orange-500 dark:bg-orange-500/20 dark:text-orange-500";
     return "bg-error/20 text-error dark:bg-error/20 dark:text-error";
   };
+  void _cellColor;
 
   const maxPeriods = Math.max(...cohorts.map((c) => c.retention.length), 0);
 
@@ -511,14 +515,14 @@ function RetentionTab() {
                   <Td>
                     {c.cohortSize}
                   </Td>
-                  {c.retention.map((pct, i) => (
+                  {c.retention.map((pct) => (
                     <Td>
                       {formatPct(pct)}
                     </Td>
                   ))}
                   {Array.from(
                     { length: maxPeriods - c.retention.length },
-                    (_, i) => (
+                    () => (
                       <Td>—</Td>
                     ),
                   )}

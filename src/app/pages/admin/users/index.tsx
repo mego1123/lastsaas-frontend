@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import {
+  MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
   ChevronLeftIcon,
@@ -9,7 +10,6 @@ import {
   ArrowsUpDownIcon,
   UserCircleIcon,
   ArrowDownTrayIcon,
-  FunnelIcon,
 } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
@@ -18,6 +18,8 @@ import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Form/Input";
+import { Select } from "@/components/ui/Form/Select";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -28,8 +30,6 @@ import {
   Td,
 } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { TableToolbar } from "@/components/shared/TableToolbar";
-import type { FilterOption } from "@/components/shared/TableToolbar";
 import { adminApi } from "@/utils/api";
 import { ACCESS_TOKEN_KEY, IMPERSONATION_KEY, REFRESH_TOKEN_KEY } from "@/configs/auth";
 import { useAuthContext } from "@/app/contexts/auth/context";
@@ -275,46 +275,41 @@ export default function UsersPage() {
               {total.toLocaleString()} total users
             </p>
           </div>
+          <Button
+            variant="outlined"
+            color="neutral"
+            onClick={handleExport}
+            title="Download CSV"
+            className="h-9"
+          >
+            <ArrowDownTrayIcon className="size-4" />
+            CSV
+          </Button>
         </div>
 
-        {/* Table with integrated toolbar */}
-        <Card className="px-4 pb-5 sm:px-5">
-          <TableToolbar
-            title="Users"
-            searchValue={search}
-            onSearchChange={(v) => handleSearchChange(v)}
-            searchPlaceholder="Search by name or email..."
-            isFiltered={Boolean(search || status)}
-            onClearAll={() => {
-              handleSearchChange("");
-              handleStatusChange("");
-            }}
-            filters={[
-              {
-                key: "status",
-                title: "Status",
-                Icon: FunnelIcon,
-                value: status,
-                onChange: (v) => handleStatusChange(v),
-                options: [
-                  { value: "active", label: "Active" },
-                  { value: "disabled", label: "Disabled" },
-                ] as FilterOption[],
-              },
-            ]}
-            rightSlot={
-              <Button
-                variant="outlined"
-                color="neutral"
-                onClick={handleExport}
-                title="Download CSV"
-                className="h-8 gap-2 rounded-md px-3 text-xs"
-              >
-                <ArrowDownTrayIcon className="size-4" />
-                <span>CSV</span>
-              </Button>
-            }
+        {/* Search + Filters */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Input
+            placeholder="Search by name or email..."
+            prefix={<MagnifyingGlassIcon className="size-4" />}
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="h-10 w-full sm:max-w-md"
           />
+          <Select
+            value={status}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="h-10 sm:w-44"
+            data={[
+              { label: "All statuses", value: "" },
+              { label: "Active", value: "active" },
+              { label: "Disabled", value: "disabled" },
+            ]}
+          />
+        </div>
+
+        {/* Table */}
+        <Card className="mt-3">
           {loading && users.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />

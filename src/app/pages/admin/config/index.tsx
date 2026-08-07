@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   ShieldCheckIcon,
   ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -26,7 +27,6 @@ import { Select } from "@/components/ui/Form/Select";
 import { Textarea } from "@/components/ui/Form/Textarea";
 import { Table, TBody, THead, Tr, Th, Td } from "@/components/ui/Table";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
-import { TableToolbar } from "@/components/shared/TableToolbar";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { adminApi } from "@/utils/api";
 import { getErrorMessage } from "@/utils/errors";
@@ -148,31 +148,34 @@ export default function ConfigPage() {
           )}
         </div>
 
-        <Card className="px-4 pb-5 sm:px-5">
-          <TableToolbar
-            title="Variables"
-            searchValue={filter}
-            onSearchChange={setFilter}
-            searchPlaceholder="Filter by name or description..."
-            isFiltered={Boolean(filter)}
-            onClearAll={() => setFilter("")}
+        {/* Search */}
+        <div className="mb-6">
+          <Input
+            prefix={<MagnifyingGlassIcon className="h-4 w-4" />}
+            placeholder="Filter by name or description..."
+            value={filter}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setFilter(e.target.value)
+            }
           />
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Spinner className="h-8 w-8" color="primary" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="py-12 text-center">
-              <Cog6ToothIcon className="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-dark-400" />
-              <p className="text-gray-500 dark:text-dark-300">
-                {filter
-                  ? "No matching variables"
-                  : "No configuration variables"}
-              </p>
-            </div>
-          ) : (
-            <div className="min-w-full overflow-x-auto">
-              <Table hoverable className="w-full text-sm">
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Spinner className="h-8 w-8" color="primary" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <Card className="p-12 text-center">
+            <Cog6ToothIcon className="mx-auto mb-4 h-12 w-12 text-gray-300 dark:text-dark-400" />
+            <p className="text-gray-500 dark:text-dark-300">
+              {filter
+                ? "No matching variables"
+                : "No configuration variables"}
+            </p>
+          </Card>
+        ) : (
+          <Card className="mt-3">
+            <Table hoverable className="text-sm">
               <THead>
                 <Tr>
                   <Th>Name</Th>
@@ -234,9 +237,8 @@ export default function ConfigPage() {
                 ))}
               </TBody>
             </Table>
-            </div>
-          )}
-        </Card>
+          </Card>
+        )}
 
         {/* Edit Modal */}
         {editVar && (

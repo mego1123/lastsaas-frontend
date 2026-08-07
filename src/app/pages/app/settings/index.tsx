@@ -1,8 +1,15 @@
 // Import Dependencies
 import { useMemo, useState } from "react";
+import {
+  UserCircleIcon,
+  ShieldCheckIcon,
+  ClockIcon,
+  CreditCardIcon,
+} from "@heroicons/react/24/outline";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { SegmentedToggle } from "@/components/shared/SegmentedToggle";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useBranding } from "@/app/contexts/branding/context";
 import ProfileTab from "./ProfileTab";
@@ -13,6 +20,13 @@ import BillingTab from "./BillingTab";
 // ----------------------------------------------------------------------
 
 type TabKey = "profile" | "security" | "sessions" | "billing";
+
+const TAB_ICONS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
+  profile: UserCircleIcon,
+  security: ShieldCheckIcon,
+  sessions: ClockIcon,
+  billing: CreditCardIcon,
+};
 
 export default function SettingsPage() {
   const { user } = useAuthContext();
@@ -49,27 +63,18 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Tab Navigation — scrollable on mobile, fixed on desktop */}
-        <div
-          className="mb-6 flex gap-1 overflow-x-auto rounded-lg border border-gray-200 p-1 dark:border-dark-600"
-          role="tablist"
-        >
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setTab(t.key)}
-              role="tab"
-              aria-selected={tab === t.key}
-              className={`min-h-11 flex-1 whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.key
-                  ? "bg-primary-500/10 text-primary-600 dark:bg-primary-400/15 dark:text-primary-400"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-dark-300 dark:hover:bg-dark-300/10 dark:hover:text-dark-50"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        {/* Tab Navigation — Exchange-style segmented toggle
+            (from dashboards/crypto-1) */}
+        <div className="mb-6">
+          <SegmentedToggle
+            value={tab}
+            onChange={(v) => setTab(v as TabKey)}
+            options={tabs.map((t) => ({
+              value: t.key,
+              label: t.label,
+              Icon: TAB_ICONS[t.key],
+            }))}
+          />
         </div>
 
         {tab === "profile" && <ProfileTab />}
