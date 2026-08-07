@@ -61,7 +61,6 @@ export default function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState<SectionKey>("profile");
   const active = sections.find((s) => s.key === activeSection) || sections[0];
-  const ActiveComponent = active.Component;
 
   const breadcrumbs: BreadcrumbItem[] = [
     { title: "App", path: "/dashboard" },
@@ -77,11 +76,11 @@ export default function SettingsPage() {
         {/* Left: "Sections" heading    Right: h2 + divider + Breadcrumbs */}
         {/* ============================================================ */}
         <div className="grid grid-cols-1 gap-6 pb-5 lg:grid-cols-4 lg:gap-8">
-          {/* Left column header — "Sections" heading (sidebar-side header) */}
+          {/* Left column header — "Settings" heading (sidebar-side header) */}
           <div className="hidden lg:block">
             <h3 className="flex items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100">
               <ListBulletIcon className="size-6" />
-              <span>Sections</span>
+              <span>Settings</span>
             </h3>
           </div>
 
@@ -109,7 +108,7 @@ export default function SettingsPage() {
             {/* Mobile title (desktop title is in the header row above) */}
             <h3 className="flex items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100 lg:hidden">
               <ListBulletIcon className="size-6" />
-              <span>Sections</span>
+              <span>Settings</span>
             </h3>
 
             <div className="mt-3 flex min-w-0 flex-col gap-0 overflow-x-auto lg:mt-0 lg:overflow-visible">
@@ -137,9 +136,16 @@ export default function SettingsPage() {
             </div>
           </nav>
 
-          {/* Right content pane — shows ONLY the selected section */}
+          {/* Right content pane — ALL sections stay mounted, only the active
+              one is visible. This gives instant tab switching with no
+              refetch/loading flash (SPA behavior, matching Tailux docs pages
+              where switching nav items shows content instantly). */}
           <div className="lg:col-span-3">
-            <ActiveComponent />
+            {sections.map(({ key, Component }) => (
+              <div key={key} className={key === activeSection ? undefined : "hidden"}>
+                <Component />
+              </div>
+            ))}
           </div>
         </div>
       </div>
