@@ -16,12 +16,18 @@ import BillingTab from "./BillingTab";
 // ----------------------------------------------------------------------
 // Settings page — master-detail (list-detail) layout.
 //
-// Matches the STRUCTURAL PATTERN of the Tailux Hooks docs page:
-//   - Header: h2 title + vertical divider + Breadcrumbs (DemoLayout pattern)
-//     Breadcrumbs update to include the active section name.
-//   - Left: DocsNavigation-style nav list (col-span-1, no icons, border-l
-//     active state, sticky)
-//   - Right: content pane (col-span-3) showing ONLY the selected section
+// Layout structure (matching the Tailux docs/hooks pattern):
+//
+//   ┌──────────────────────┬─────────────────────────────────────────┐
+//   │ Sections             │ Settings │ App › Settings › Profile      │  ← SAME ROW
+//   ├──────────────────────┼─────────────────────────────────────────┤
+//   │ Profile              │                                         │
+//   │ Sessions             │              PAGE CONTENT               │
+//   │ Billing              │                                         │
+//   └──────────────────────┴─────────────────────────────────────────┘
+//
+// The "Sections" heading and the "Settings | breadcrumbs" header are on
+// the SAME horizontal row. Below that row: left = nav list, right = content.
 // ----------------------------------------------------------------------
 
 type SectionKey = "profile" | "security" | "sessions" | "billing";
@@ -57,9 +63,6 @@ export default function SettingsPage() {
   const active = sections.find((s) => s.key === activeSection) || sections[0];
   const ActiveComponent = active.Component;
 
-  // Breadcrumbs update when switching sections — includes the active
-  // section name as the last (non-link) item, matching the docs/hooks
-  // pattern where the last breadcrumb is the current page name.
   const breadcrumbs: BreadcrumbItem[] = [
     { title: "App", path: "/dashboard" },
     { title: "Settings", path: "/settings" },
@@ -69,32 +72,47 @@ export default function SettingsPage() {
   return (
     <Page title="Settings">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
-        {/* Header — DemoLayout pattern: h2 + divider + Breadcrumbs
-            All in one flex row, left-to-right, on the LEFT side */}
-        <div className="flex items-center space-x-4 pb-5 rtl:space-x-reverse">
-          <h2 className="truncate text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
-            Settings
-          </h2>
-          <div className="hidden self-stretch py-1 sm:flex">
-            <div className="h-full w-px bg-gray-300 dark:bg-dark-600"></div>
+        {/* ============================================================ */}
+        {/* TOP HEADER ROW — spans both columns                          */}
+        {/* Left: "Sections" heading    Right: h2 + divider + Breadcrumbs */}
+        {/* ============================================================ */}
+        <div className="grid grid-cols-1 gap-6 pb-5 lg:grid-cols-4 lg:gap-8">
+          {/* Left column header — "Sections" heading (sidebar-side header) */}
+          <div className="hidden lg:block">
+            <h3 className="flex items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100">
+              <ListBulletIcon className="size-6" />
+              <span>Sections</span>
+            </h3>
           </div>
-          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
+
+          {/* Right column header — h2 title + divider + Breadcrumbs
+              All in one flex row, left-aligned. The breadcrumb is
+              positioned IMMEDIATELY AFTER the title (not right-aligned). */}
+          <div className="flex items-center space-x-4 rtl:space-x-reverse lg:col-span-3">
+            <h2 className="truncate text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
+              Settings
+            </h2>
+            <div className="hidden self-stretch py-1 sm:flex">
+              <div className="h-full w-px bg-gray-300 dark:bg-dark-600"></div>
+            </div>
+            <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
+          </div>
         </div>
 
-        {/* Master-detail layout — matches docs/hooks pattern exactly:
-            grid grid-cols-4, left nav (col-span-1) + content (col-span-3) */}
+        {/* ============================================================ */}
+        {/* CONTENT ROW — left nav (1 col) + right content (3 cols)      */}
+        {/* Both start at the same baseline below the shared header       */}
+        {/* ============================================================ */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-8">
-          {/* Left navigation — DocsNavigation pattern:
-              sticky, col-span-1, no icons, border-l active state */}
+          {/* Left navigation — sticky on desktop, horizontal scroll on mobile */}
           <nav className="lg:sticky lg:top-24 lg:col-span-1 lg:self-start">
-            {/* Title (desktop only) */}
-            <h3 className="hidden items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100 lg:flex">
+            {/* Mobile title (desktop title is in the header row above) */}
+            <h3 className="flex items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100 lg:hidden">
               <ListBulletIcon className="size-6" />
               <span>Sections</span>
             </h3>
 
-            {/* Nav items — vertical list on desktop, horizontal scroll on mobile */}
-            <div className="mt-3 flex min-w-0 flex-col gap-0 overflow-x-auto lg:overflow-visible">
+            <div className="mt-3 flex min-w-0 flex-col gap-0 overflow-x-auto lg:mt-0 lg:overflow-visible">
               <ul className="flex gap-1 pb-1 lg:flex-col lg:gap-0 lg:pb-0">
                 {sections.map(({ key, label }) => {
                   const isActive = key === activeSection;
@@ -119,7 +137,7 @@ export default function SettingsPage() {
             </div>
           </nav>
 
-          {/* Right content pane — shows ONLY the selected section, full width */}
+          {/* Right content pane — shows ONLY the selected section */}
           <div className="lg:col-span-3">
             <ActiveComponent />
           </div>
