@@ -93,7 +93,7 @@ export default function AdminFinancialPage() {
 
   return (
     <Page title="Financial">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {/* Header — unified title + controls in one row */}
         <div className="flex items-center justify-between pb-5">
           <div>

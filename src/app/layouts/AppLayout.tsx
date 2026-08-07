@@ -106,6 +106,25 @@ export default function AppLayout() {
     };
   }, []);
 
+  // Remove the 'preload' class after the layout has painted. This class
+  // disables all CSS transitions (see base.css) to prevent the layout flash
+  // where content renders full-width then animates to the sidebar-offset
+  // position. We use a double requestAnimationFrame to ensure the browser
+  // has completed at least one paint cycle with the correct layout before
+  // re-enabling transitions.
+  useEffect(() => {
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        document.body.classList.remove("preload");
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+
   // Fetch unread message count and latest published announcement.
   useEffect(() => {
     if (!isAuthenticated) return;

@@ -242,7 +242,7 @@ export default function TestEntitlementsPage() {
 
   return (
     <Page title="Test Entitlements">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         <div className="mb-6">
           <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
             Test Entitlements

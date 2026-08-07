@@ -69,7 +69,7 @@ export default function SettingsPage() {
 
   return (
     <Page title="Settings">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {/* ============================================================ */}
         {/* TOP HEADER ROW — spans both columns                          */}
         {/* Left: "Sections" heading    Right: h2 + divider + Breadcrumbs */}

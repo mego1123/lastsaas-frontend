@@ -64,7 +64,7 @@ export default function BuyCreditsPage() {
 
   return (
     <Page title="Buy Credits">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">

@@ -27,7 +27,7 @@ export default function DashboardPage() {
 
   return (
     <Page title="Dashboard">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {branding.dashboardHtml && (
           <div
             className="pb-5"

@@ -245,7 +245,7 @@ export default function BrandingPage() {
   if (loading) {
     return (
       <Page title="Branding">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="px-(--margin-x) pt-6 pb-8">
           <div className="flex justify-center py-20">
             <Spinner className="h-8 w-8" color="primary" />
           </div>
@@ -256,7 +256,7 @@ export default function BrandingPage() {
   if (!config) {
     return (
       <Page title="Branding">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="px-(--margin-x) pt-6 pb-8">
           <div className="py-20 text-center text-gray-500 dark:text-dark-300">
             Failed to load branding config.
           </div>
@@ -291,7 +291,7 @@ export default function BrandingPage() {
 
   return (
     <Page title="Branding">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         <div className="flex items-center justify-between pb-5">
           <div>
             <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">

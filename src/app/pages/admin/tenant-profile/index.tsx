@@ -233,7 +233,7 @@ export default function TenantProfilePage() {
   if (loading) {
     return (
       <Page title="Tenant Profile">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="px-(--margin-x) pt-6 pb-8">
           <div className="flex items-center justify-center py-20">
             <Spinner className="size-8" color="primary" />
           </div>
@@ -245,7 +245,7 @@ export default function TenantProfilePage() {
   if (fetchError || !tenant) {
     return (
       <Page title="Tenant Profile">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="px-(--margin-x) pt-6 pb-8">
           <div className="py-20 text-center">
             <p className="mb-4 text-error">
               {fetchError || "Tenant not found"}
@@ -292,7 +292,7 @@ export default function TenantProfilePage() {
 
   return (
     <Page title="Tenant Profile">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="pb-5">
           <Link

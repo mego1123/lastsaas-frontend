@@ -90,7 +90,7 @@ export default function HealthPage() {
   if (loading) {
     return (
       <Page title="System Health">
-        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="px-(--margin-x) pt-6 pb-8">
           <div className="flex items-center justify-center py-20">
             <Spinner className="size-8" color="primary" />
           </div>
@@ -101,7 +101,7 @@ export default function HealthPage() {
 
   return (
     <Page title="System Health">
-      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+      <div className="px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="pb-5">
           <div className="flex items-center gap-3">
