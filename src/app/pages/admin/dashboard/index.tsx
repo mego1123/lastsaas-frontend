@@ -232,7 +232,7 @@ export default function AdminDashboardPage() {
       <div className="px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="pb-5">
-          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
+          <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Admin Dashboard
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">

@@ -303,7 +303,7 @@ export default function TenantProfilePage() {
           </Link>
           <div className="flex items-center gap-3">
             <div>
-              <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
+              <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
                 Tenant Profile
               </h2>
               <p className="text-sm text-gray-500 dark:text-dark-300">

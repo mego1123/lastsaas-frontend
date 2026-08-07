@@ -270,7 +270,7 @@ export default function UsersPage() {
         {/* Header — unified title + controls in one row */}
         <div className="flex items-center justify-between pb-5">
           <div>
-            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
+            <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Users
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">

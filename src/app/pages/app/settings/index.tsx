@@ -87,7 +87,7 @@ export default function SettingsPage() {
               All in one flex row, left-aligned. The breadcrumb is
               positioned IMMEDIATELY AFTER the title (not right-aligned). */}
           <div className="flex items-center space-x-4 rtl:space-x-reverse lg:col-span-3">
-            <h2 className="truncate text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50 lg:text-2xl">
+            <h2 className="truncate text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
               Settings
             </h2>
             <div className="hidden self-stretch py-1 sm:flex">
