@@ -70,11 +70,7 @@ export default function SessionsTab() {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
-            <Monitor className="h-5 w-5 text-gray-400 dark:text-dark-400" />
-            Active Sessions
-          </h2>
+        <div className="mb-4 flex items-center justify-end">
           {sessions.length > 1 && (
             <Button
               variant="flat"
