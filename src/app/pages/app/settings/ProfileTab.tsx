@@ -228,7 +228,7 @@ export default function ProfileTab() {
 
       {/* Change Password */}
       <Card className="p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+        <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
           <KeyRound className="h-5 w-5 text-gray-400 dark:text-dark-400" />
           Change Password
         </h2>
@@ -281,7 +281,7 @@ export default function ProfileTab() {
 
       {/* Data Export */}
       <Card className="p-6">
-        <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+        <h2 className="mb-2 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
           <Download className="h-5 w-5 text-gray-400 dark:text-dark-400" />
           Export My Data
         </h2>
@@ -302,7 +302,7 @@ export default function ProfileTab() {
 
       {/* Delete Account */}
       <Card className="border-error/20 bg-error/5 p-6">
-        <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-error">
+        <h2 className="mb-2 flex items-center gap-2 text-base font-medium tracking-wide text-error">
           <Trash2 className="h-5 w-5" />
           Delete Account
         </h2>
@@ -348,7 +348,7 @@ export default function ProfileTab() {
           leaveTo="opacity-0 scale-95"
           className="relative w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 transition-all dark:border-dark-600 dark:bg-dark-700"
         >
-          <h3 className="mb-2 text-lg font-semibold text-error">
+          <h3 className="mb-2 text-base font-medium tracking-wide text-error">
             Delete Account
           </h3>
           <p className="mb-4 text-sm text-gray-500 dark:text-dark-300">

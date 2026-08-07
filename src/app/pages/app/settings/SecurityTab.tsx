@@ -126,7 +126,7 @@ export default function SecurityTab() {
       {/* MFA Section */}
       {showMfaSection && (
         <Card className="p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
             <Shield className="h-5 w-5 text-gray-400 dark:text-dark-400" />
             Two-Factor Authentication
           </h2>
@@ -215,7 +215,7 @@ export default function SecurityTab() {
       {/* Passkeys Section */}
       {passkeysEnabled && (
         <Card className="p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
             <Fingerprint className="h-5 w-5 text-gray-400 dark:text-dark-400" />
             Passkeys
           </h2>
