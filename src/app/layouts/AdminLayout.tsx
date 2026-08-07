@@ -1,5 +1,5 @@
 // Import Dependencies
-import { useEffect, useLayoutEffect, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useState } from "react";
 import {
   Link,
   NavLink,
@@ -236,7 +236,9 @@ export default function AdminLayout() {
       {/* Main content — pages own their padding via px-(--margin-x) pb-8 */}
       {/* ============================================================= */}
       <main className="main-content transition-content grid grid-cols-1">
-        <Outlet context={{ setUnreadCount }} />
+        <Suspense fallback={null}>
+          <Outlet context={{ setUnreadCount }} />
+        </Suspense>
       </main>
 
       {/* ============================================================= */}

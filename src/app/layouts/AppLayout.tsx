@@ -1,5 +1,5 @@
 // Import Dependencies
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Squares2X2Icon,
@@ -326,7 +326,9 @@ export default function AppLayout() {
       {/* Main content — pages own their padding via px-(--margin-x) pb-8 */}
       {/* ============================================================= */}
       <main className="main-content transition-content grid grid-cols-1">
-        <Outlet context={{ setUnreadCount }} />
+        <Suspense fallback={null}>
+          <Outlet context={{ setUnreadCount }} />
+        </Suspense>
       </main>
 
       {/* ============================================================= */}

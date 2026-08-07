@@ -1,6 +1,7 @@
 // Import Dependencies
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Check,
   Minus,
@@ -10,7 +11,6 @@ import {
   XCircle,
   AlertTriangle,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogPanel,
@@ -32,7 +32,6 @@ import {
   Td,
 } from "@/components/ui/Table";
 import { plansApi, billingApi } from "@/utils/api";
-import { getErrorMessage } from "@/utils/errors";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import type {
   Plan,
@@ -83,18 +82,6 @@ export default function PlanPage() {
   const { currentTenant: activeTenant } = useTenantContext();
   // The original called `useTelemetry().trackPageView('/plan')` — the new
   // project has no telemetry hook, so the call is omitted (no UI impact).
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [currentPlanId, setCurrentPlanId] = useState("");
-  const [billingWaived, setBillingWaived] = useState(false);
-  const [billingStatus, setBillingStatus] = useState<BillingStatus>("none");
-  const [billingInterval, setBillingInterval] = useState<string>("");
-  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string>("");
-  const [, setCanceledAt] = useState<string>("");
-  const [subscriptionCredits, setSubscriptionCredits] = useState(0);
-  const [purchasedCredits, setPurchasedCredits] = useState(0);
-  const [maxPlanUserLimit, setMaxPlanUserLimit] = useState(0);
-  const [currency, setCurrency] = useState("usd");
-  const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -110,27 +97,24 @@ export default function PlanPage() {
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  useEffect(() => {
-    if (!activeTenant) return;
-    setLoading(true);
-    plansApi
-      .list()
-      .then((data) => {
-        setPlans(data.plans);
-        setCurrentPlanId(data.currentPlanId);
-        setBillingWaived(data.billingWaived);
-        setBillingStatus(data.billingStatus || "none");
-        setBillingInterval(data.billingInterval || "");
-        setCurrentPeriodEnd(data.currentPeriodEnd || "");
-        setCanceledAt(data.canceledAt || "");
-        setSubscriptionCredits(data.tenantSubscriptionCredits);
-        setPurchasedCredits(data.tenantPurchasedCredits);
-        setMaxPlanUserLimit(data.maxPlanUserLimit);
-        if (data.currency) setCurrency(data.currency);
-      })
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, [activeTenant]);
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data: plansData, isLoading: loading } = useQuery({
+    queryKey: ["plans", activeTenant],
+    queryFn: () => plansApi.list(),
+    enabled: !!activeTenant,
+  });
+
+  // Derive all values from cached query data — no manual state needed
+  const plans = plansData?.plans ?? [];
+  const currentPlanId = plansData?.currentPlanId ?? "";
+  const billingWaived = plansData?.billingWaived ?? false;
+  const billingStatus: BillingStatus = plansData?.billingStatus ?? "none";
+  const billingInterval = plansData?.billingInterval ?? "";
+  const currentPeriodEnd = plansData?.currentPeriodEnd ?? "";
+  const subscriptionCredits = plansData?.tenantSubscriptionCredits ?? 0;
+  const purchasedCredits = plansData?.tenantPurchasedCredits ?? 0;
+  const maxPlanUserLimit = plansData?.maxPlanUserLimit ?? 0;
+  const currency = plansData?.currency ?? "usd";
 
   useEffect(() => {
     if (!loading && upgradePlanId && cardRefs.current[upgradePlanId]) {

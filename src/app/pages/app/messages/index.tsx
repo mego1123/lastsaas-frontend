@@ -1,8 +1,7 @@
 // Import Dependencies
-import { useEffect, useState } from "react";
 import { CheckCircle, Mail } from "lucide-react";
 import { useOutletContext } from "react-router";
-import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
@@ -12,12 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { messagesApi } from "@/utils/api";
 import type { Message } from "@/@types/lastsaas";
-import { getErrorMessage } from "@/utils/errors";
 
-// ----------------------------------------------------------------------
-// Migration of `frontend/src/pages/admin/MessagesPage.tsx` (97 LOC).
-// (Note: original file is under `pages/admin/`, but the route `/messages`
-// is registered as an app route — see `app/router/protected.tsx`.)
 // ----------------------------------------------------------------------
 
 type MessagesOutletContext = {
@@ -27,35 +21,22 @@ type MessagesOutletContext = {
 };
 
 export default function MessagesPage() {
-  // The AdminLayout (admin `/last/messages` route) provides an outlet
-  // context that lets us push unread-count updates back to the sidebar
-  // badge. The AppLayout (`/messages`) doesn't, so we accept undefined.
   const outletCtx = useOutletContext<MessagesOutletContext | undefined>();
   const setUnreadCount = outletCtx?.setUnreadCount;
+  const queryClient = useQueryClient();
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    messagesApi
-      .list()
-      .then((data) => {
-        setMessages(data.messages);
-        const unread = data.messages.filter((m) => !m.read).length;
-        setUnreadCount?.(() => unread);
-      })
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["messages"],
+    queryFn: () => messagesApi.list(),
+  });
+  const messages = data?.messages ?? [];
 
   const markAsRead = async (msg: Message) => {
     if (msg.read) return;
     try {
       await messagesApi.markRead(msg.id);
-      setMessages(
-        messages.map((m) => (m.id === msg.id ? { ...m, read: true } : m)),
-      );
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
       setUnreadCount?.((prev: number) => Math.max(0, prev - 1));
     } catch {
       // ignore
@@ -65,8 +46,10 @@ export default function MessagesPage() {
   if (loading) {
     return (
       <Page title="Messages">
-        <div className="flex items-center justify-center py-20">
-          <Spinner className="h-8 w-8" color="primary" />
+        <div className="px-(--margin-x) pt-6 pb-8">
+          <div className="flex items-center justify-center py-20">
+            <Spinner className="h-8 w-8" color="primary" />
+          </div>
         </div>
       </Page>
     );
@@ -110,34 +93,34 @@ export default function MessagesPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3
-                        className={`text-sm font-medium ${
+                        className={`text-base font-medium tracking-wide ${
                           msg.read
                             ? "text-gray-500 dark:text-dark-300"
-                            : "text-gray-900 dark:text-dark-50"
+                            : "text-gray-800 dark:text-dark-100"
                         }`}
                       >
                         {msg.subject}
                       </h3>
                       {msg.isSystem && (
-                        <Badge
-                          color="primary"
-                          variant="soft"
-                          className="text-xs"
-                        >
+                        <Badge color="primary" variant="soft">
                           System
                         </Badge>
                       )}
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-gray-500 dark:text-dark-300">
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600 dark:text-dark-200">
                       {msg.body}
                     </p>
-                    <p className="mt-3 text-xs text-gray-400 dark:text-dark-400">
-                      {new Date(msg.createdAt).toLocaleString()}
-                    </p>
                   </div>
-                  {msg.read && (
-                    <CheckCircle className="ml-4 h-4 w-4 shrink-0 text-gray-400 dark:text-dark-500" />
-                  )}
+                  <div className="flex shrink-0 items-center gap-2">
+                    {msg.read ? (
+                      <CheckCircle className="size-4 text-gray-400" />
+                    ) : (
+                      <span className="size-2 rounded-full bg-primary-500" />
+                    )}
+                    <span className="text-xs text-gray-400">
+                      {new Date(msg.createdAt).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </Card>
             ))}

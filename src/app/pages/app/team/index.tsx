@@ -1,6 +1,7 @@
 // Import Dependencies
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   UserPlusIcon,
   TrashIcon,
@@ -31,7 +32,7 @@ import { tenantApi, plansApi } from "@/utils/api";
 import { getErrorMessage, getErrorCode, getErrorString } from "@/utils/errors";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useTenantContext } from "@/app/contexts/tenant/context";
-import type { TenantMember, Plan } from "@/@types/lastsaas";
+import type { TenantMember } from "@/@types/lastsaas";
 
 // ----------------------------------------------------------------------
 
@@ -71,9 +72,25 @@ export default function TeamPage() {
   const { currentTenant } = useTenantContext();
   const myRole = currentTenant?.role ?? "";
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [members, setMembers] = useState<TenantMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  // React Query — cached data, no refetch within staleTime (60s)
+  const { data: membersData, isLoading: loading } = useQuery({
+    queryKey: ["team", "members"],
+    queryFn: () => tenantApi.listMembers(),
+  });
+  const members = membersData?.members ?? [];
+
+  const { data: plansData } = useQuery({
+    queryKey: ["plans"],
+    queryFn: () => plansApi.list(),
+  });
+  const currentPlanUserLimit = plansData?.currentPlanUserLimit ?? 0;
+  const currentPlanId = plansData?.currentPlanId ?? "";
+  const plans = plansData?.plans ?? [];
+  const upgradePromptTitle = plansData?.upgradePromptTitle ?? "";
+  const upgradePromptBody = plansData?.upgradePromptBody ?? "";
+
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [inviting, setInviting] = useState(false);
@@ -81,42 +98,12 @@ export default function TeamPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradePromptTitle, setUpgradePromptTitle] = useState("");
-  const [upgradePromptBody, setUpgradePromptBody] = useState("");
-  const [currentPlanUserLimit, setCurrentPlanUserLimit] = useState(0);
-  const [currentPlanId, setCurrentPlanId] = useState("");
-  const [plans, setPlans] = useState<Plan[]>([]);
 
   const [removeMember, setRemoveMember] = useState<TenantMember | null>(null);
   const [removeLoading, setRemoveLoading] = useState(false);
 
   const canManage = myRole === "owner" || myRole === "admin";
   const isOwner = myRole === "owner";
-
-  const fetchMembers = () => {
-    tenantApi
-      .listMembers()
-      .then((data) => setMembers(data.members))
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  useEffect(() => {
-    plansApi
-      .list()
-      .then((data) => {
-        setCurrentPlanUserLimit(data.currentPlanUserLimit);
-        setCurrentPlanId(data.currentPlanId);
-        setPlans(data.plans);
-        setUpgradePromptTitle(data.upgradePromptTitle);
-        setUpgradePromptBody(data.upgradePromptBody);
-      })
-      .catch((err) => toast.error(getErrorMessage(err)));
-  }, []);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +115,7 @@ export default function TeamPage() {
       setSuccess(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInvite(false);
+      queryClient.invalidateQueries({ queryKey: ["team", "members"] });
     } catch (err: unknown) {
       const code = getErrorCode(err);
       if (code === "USER_LIMIT_REACHED") {
@@ -144,7 +132,7 @@ export default function TeamPage() {
     setRemoveLoading(true);
     try {
       await tenantApi.removeMember(member.userId);
-      setMembers(members.filter((m) => m.userId !== member.userId));
+      queryClient.invalidateQueries({ queryKey: ["team", "members"] });
       toast.success(`${member.displayName} removed from team`);
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -157,13 +145,7 @@ export default function TeamPage() {
   const handleChangeRole = async (member: TenantMember, newRole: string) => {
     try {
       await tenantApi.changeRole(member.userId, newRole);
-      setMembers(
-        members.map((m) =>
-          m.userId === member.userId
-            ? { ...m, role: newRole as TenantMember["role"] }
-            : m,
-        ),
-      );
+      queryClient.invalidateQueries({ queryKey: ["team", "members"] });
       toast.success(`${member.displayName}'s role changed to ${newRole}`);
     } catch (err) {
       toast.error(getErrorMessage(err));
