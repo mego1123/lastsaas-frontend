@@ -12,6 +12,7 @@ import {
   ChevronUpIcon,
   CalendarDaysIcon,
   FunnelIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -276,6 +277,7 @@ export default function LogsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Category filter */}
             <ResponsiveFilter
               buttonContent={
                 <>
@@ -301,6 +303,155 @@ export default function LogsPage() {
                 }))}
               />
             </ResponsiveFilter>
+
+            {/* Severity filter (multi-select) */}
+            <ResponsiveFilter
+              buttonContent={
+                <>
+                  <ExclamationTriangleIcon className="size-4" />
+                  <span>Level</span>
+                  {activeSeverities.size < 5 && activeSeverities.size > 0 && (
+                    <>
+                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
+                      <Badge className="gap-1">
+                        {activeSeverities.size} selected
+                      </Badge>
+                    </>
+                  )}
+                </>
+              }
+            >
+              <div className="flex max-h-80 w-56 flex-col">
+                <div className="max-h-80 overflow-y-auto py-1 outline-hidden">
+                  {ALL_SEVERITIES.map((sev) => {
+                    const cfg = severityConfig[sev];
+                    const count = severityCounts[sev] || 0;
+                    const isSelected = activeSeverities.has(sev);
+                    return (
+                      <button
+                        key={sev}
+                        type="button"
+                        onClick={() => toggleSeverity(sev)}
+                        className={[
+                          "relative flex w-full cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-left text-xs-plus outline-hidden transition-colors",
+                          isSelected
+                            ? "bg-primary-50 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300"
+                            : "text-gray-800 hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-600",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "flex size-4 shrink-0 items-center justify-center rounded border",
+                            isSelected
+                              ? "border-primary-500 bg-primary-500 text-white"
+                              : "border-gray-300 dark:border-dark-450",
+                          ].join(" ")}
+                        >
+                          {isSelected && <XMarkIcon className="size-3" />}
+                        </span>
+                        <span className={`size-2 rounded-full ${cfg.bg.replace("/10", "/60")}`} />
+                        <span className="block flex-1 truncate">{cfg.label}</span>
+                        {count > 0 && (
+                          <span className="font-mono text-[10px] text-gray-400 dark:text-dark-400">
+                            {count.toLocaleString()}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {activeSeverities.size < 5 && (
+                  <Button
+                    onClick={() => setActiveSeverities(new Set(ALL_SEVERITIES))}
+                    className="w-full shrink-0 rounded-none"
+                    variant="flat"
+                    color="error"
+                  >
+                    Clear Filter
+                  </Button>
+                )}
+              </div>
+            </ResponsiveFilter>
+
+            {/* Date filter */}
+            <ResponsiveFilter
+              buttonContent={
+                <>
+                  <CalendarDaysIcon className="size-4" />
+                  <span>Date</span>
+                  {fromDate && (
+                    <>
+                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
+                      <Badge className="gap-1">
+                        {DATE_PRESETS.find(
+                          (p) =>
+                            !toDate &&
+                            Math.abs(
+                              new Date().getTime() -
+                                new Date(fromDate).getTime() -
+                                p.hours * 3600000,
+                            ) < 60000,
+                        )?.label || "Custom"}
+                      </Badge>
+                    </>
+                  )}
+                </>
+              }
+            >
+              <div className="flex w-56 flex-col">
+                <div className="py-1 outline-hidden">
+                  <p className="px-2.5 pb-1.5 pt-1 text-[10px] font-medium tracking-wider text-gray-400 uppercase dark:text-dark-400">
+                    Quick ranges
+                  </p>
+                  {DATE_PRESETS.map((p) => {
+                    const isSelected =
+                      fromDate &&
+                      !toDate &&
+                      Math.abs(
+                        new Date().getTime() -
+                          new Date(fromDate).getTime() -
+                          p.hours * 3600000,
+                      ) < 60000;
+                    return (
+                      <button
+                        key={p.hours}
+                        type="button"
+                        onClick={() => applyDatePreset(p.hours)}
+                        className={[
+                          "relative flex w-full cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-left text-xs-plus outline-hidden transition-colors",
+                          isSelected
+                            ? "bg-primary-50 text-primary-700 dark:bg-primary-500/20 dark:text-primary-300"
+                            : "text-gray-800 hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-600",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "flex size-4 shrink-0 items-center justify-center rounded border",
+                            isSelected
+                              ? "border-primary-500 bg-primary-500 text-white"
+                              : "border-gray-300 dark:border-dark-450",
+                          ].join(" ")}
+                        >
+                          {isSelected && <XMarkIcon className="size-3" />}
+                        </span>
+                        <span className="block truncate">{p.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {fromDate && (
+                  <Button
+                    onClick={clearDateFilter}
+                    className="w-full shrink-0 rounded-none"
+                    variant="flat"
+                    color="error"
+                  >
+                    Clear Date Filter
+                  </Button>
+                )}
+              </div>
+            </ResponsiveFilter>
+
             <CollapsibleSearch
               placeholder="Search logs..."
               value={search}
@@ -341,29 +492,6 @@ export default function LogsPage() {
           </div>
         </div>
 
-        {/* Severity multi-select toggles */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {ALL_SEVERITIES.map((sev) => {
-            const count = severityCounts[sev] || 0;
-            const cfg = severityConfig[sev];
-            const isActive = activeSeverities.has(sev);
-            return (
-              <button
-                key={sev}
-                onClick={() => toggleSeverity(sev)}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  isActive
-                    ? `${cfg.bg} ${cfg.text} border-current`
-                    : "border-gray-200 bg-gray-100 text-gray-400 line-through dark:border-dark-600 dark:bg-dark-700/50 dark:text-dark-500"
-                }`}
-              >
-                {cfg.label}
-                {count > 0 ? `: ${count.toLocaleString()}` : ""}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Active user filter chip */}
         {userId && (
           <div className="mb-4 flex items-center gap-2">
@@ -380,38 +508,6 @@ export default function LogsPage() {
             </span>
           </div>
         )}
-
-        {/* Date range */}
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <CalendarDaysIcon className="size-4 text-gray-400 dark:text-dark-400" />
-          {DATE_PRESETS.map((p) => (
-            <button
-              key={p.hours}
-              onClick={() => applyDatePreset(p.hours)}
-              className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
-                fromDate &&
-                !toDate &&
-                Math.abs(
-                  new Date().getTime() -
-                    new Date(fromDate).getTime() -
-                    p.hours * 3600000,
-                ) < 60000
-                  ? "border-primary-500/50 bg-primary-500/10 text-primary-500 dark:text-primary-400"
-                  : "border-gray-200 bg-gray-100 text-gray-500 hover:text-gray-900 dark:border-dark-600 dark:bg-dark-700 dark:text-dark-300 dark:hover:text-dark-50"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-          {fromDate && (
-            <button
-              onClick={clearDateFilter}
-              className="rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-500 transition-colors hover:text-gray-900 dark:border-dark-600 dark:text-dark-300 dark:hover:text-dark-50"
-            >
-              Clear dates
-            </button>
-          )}
-        </div>
 
         {loading ? (
           <Card>

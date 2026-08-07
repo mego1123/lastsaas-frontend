@@ -233,8 +233,10 @@ export default function TenantProfilePage() {
   if (loading) {
     return (
       <Page title="Tenant Profile">
-        <div className="flex items-center justify-center py-20">
-          <Spinner className="size-8" color="primary" />
+        <div className="transition-content px-(--margin-x) pt-6 pb-8">
+          <div className="flex items-center justify-center py-20">
+            <Spinner className="size-8" color="primary" />
+          </div>
         </div>
       </Page>
     );
