@@ -228,7 +228,7 @@ export default function UserProfilePage() {
   if (fetchError) {
     return (
       <Page title="User Profile">
-        <div className="transition-content px-(--margin-x) pb-8">
+        <div className="transition-content px-(--margin-x) pt-6 pb-8">
           <div className="py-20 text-center">
             <p className="mb-2 text-lg text-error">
               Failed to load user profile
@@ -254,7 +254,7 @@ export default function UserProfilePage() {
 
   return (
     <Page title="User Profile">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4 py-5">
           <Button

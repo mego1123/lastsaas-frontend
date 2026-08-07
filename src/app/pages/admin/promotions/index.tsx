@@ -152,8 +152,8 @@ export default function PromotionsPage() {
 
   return (
     <Page title="Promotions">
-      <div className="transition-content px-(--margin-x) pb-8">
-        <div className="mb-8 flex items-center justify-between">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="flex items-center justify-between pb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               Promotions
@@ -445,7 +445,7 @@ function EditPromotionModal({
         as={DialogPanel}
         className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <h3 className="text-lg font-semibold">Edit Promotion</h3>
           <Button
             isIcon
@@ -733,7 +733,7 @@ function CreatePromotionModal({
         as={DialogPanel}
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <h3 className="text-lg font-semibold">Create Promotion Code</h3>
           <Button
             isIcon

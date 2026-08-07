@@ -190,7 +190,7 @@ export default function PlansPage() {
 
   return (
     <Page title="Plans">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
         <div className="flex items-center justify-between py-5 lg:py-6">
           <div>
@@ -518,7 +518,7 @@ export default function PlansPage() {
 
         {/* ─── Credit Bundles Section ─────────────────────────────────────── */}
         <div className="mt-12">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="flex items-center justify-between pb-5">
             <div>
               <h2 className="flex items-center gap-3 text-xl font-semibold text-gray-900 dark:text-dark-50">
                 <BoltIcon className="size-6 text-secondary-500 dark:text-secondary-400" />
@@ -954,7 +954,7 @@ function PlanFormModal({
         leaveTo="opacity-0 scale-95"
         className="scrollbar-sm relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
       >
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
             {readOnly ? "View Plan" : isEdit ? "Edit Plan" : "Create Plan"}
           </DialogTitle>
@@ -1480,7 +1480,7 @@ function BundleFormModal({
         leaveTo="opacity-0 scale-95"
         className="relative w-full max-w-lg rounded-lg bg-white p-6 shadow-soft transition-all dark:bg-dark-700"
       >
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-dark-50">
             {readOnly
               ? "View Credit Bundle"

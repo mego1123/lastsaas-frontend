@@ -287,8 +287,8 @@ export default function BrandingPage() {
 
   return (
     <Page title="Branding">
-      <div className="transition-content px-(--margin-x) pb-8">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        <div className="flex items-center justify-between pb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               Branding

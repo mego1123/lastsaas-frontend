@@ -266,9 +266,9 @@ export default function UsersPage() {
 
   return (
     <Page title="Users">
-      <div className="transition-content px-(--margin-x) pb-8">
-        {/* Header */}
-        <div className="flex items-center justify-between py-5 lg:py-6">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header — unified title + controls in one row */}
+        <div className="flex items-center justify-between pb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               Users
@@ -277,23 +277,6 @@ export default function UsersPage() {
               {total.toLocaleString()} total users
             </p>
           </div>
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={handleExport}
-            title="Download CSV"
-            className="h-9"
-          >
-            <ArrowDownTrayIcon className="size-4" />
-            CSV
-          </Button>
-        </div>
-
-        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
-        <div className="table-toolbar flex items-center justify-between">
-          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
-            Users Table
-          </h2>
           <div className="flex items-center gap-2">
             <ResponsiveFilter
               buttonContent={
@@ -364,11 +347,21 @@ export default function UsersPage() {
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
             />
+            <Button
+              variant="outlined"
+              color="neutral"
+              onClick={handleExport}
+              title="Download CSV"
+              className="h-8 gap-2 rounded-md px-3 text-xs"
+            >
+              <ArrowDownTrayIcon className="size-4" />
+              <span>CSV</span>
+            </Button>
           </div>
         </div>
 
         {/* Table */}
-        <Card className="mt-3">
+        <Card>
           {loading && users.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />

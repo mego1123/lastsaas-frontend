@@ -264,9 +264,9 @@ export default function LogsPage() {
 
   return (
     <Page title="System Logs">
-      <div className="transition-content px-(--margin-x) pb-8">
-        {/* Header */}
-        <div className="flex items-center justify-between py-5 lg:py-6">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header — unified title + controls in one row */}
+        <div className="flex items-center justify-between pb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               System Logs
@@ -276,34 +276,67 @@ export default function LogsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ResponsiveFilter
+              buttonContent={
+                <>
+                  <FunnelIcon className="size-4" />
+                  <span>Category</span>
+                  {category && (
+                    <>
+                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
+                      <Badge className="gap-1">
+                        {categoryLabels[category as LogCategory] || category}
+                      </Badge>
+                    </>
+                  )}
+                </>
+              }
+            >
+              <FilterList
+                value={category}
+                onChange={handleCategoryChange}
+                options={Object.entries(categoryLabels).map(([val, label]) => ({
+                  value: val,
+                  label,
+                }))}
+              />
+            </ResponsiveFilter>
+            <CollapsibleSearch
+              placeholder="Search logs..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
             <Button
               variant={autoRefresh ? "filled" : "outlined"}
               color={autoRefresh ? "primary" : "neutral"}
-              className="h-9"
+              className="h-8 gap-2 rounded-md px-3 text-xs"
               onClick={() => setAutoRefresh((a) => !a)}
             >
               <ArrowPathIcon
                 className={`size-4 ${autoRefresh ? "animate-spin" : ""}`}
               />
-              Auto
+              <span>Auto</span>
             </Button>
             <Button
               variant="outlined"
               color="neutral"
-              className="h-9"
+              className="h-8 gap-2 rounded-md px-3 text-xs"
               onClick={handleRefresh}
             >
               <ArrowPathIcon className="size-4" />
-              Refresh
+              <span>Refresh</span>
             </Button>
             <Button
               variant="outlined"
               color="neutral"
-              className="h-9"
+              className="h-8 gap-2 rounded-md px-3 text-xs"
               onClick={handleExport}
             >
               <ArrowDownTrayIcon className="size-4" />
-              CSV
+              <span>CSV</span>
             </Button>
           </div>
         </div>
@@ -380,56 +413,14 @@ export default function LogsPage() {
           )}
         </div>
 
-        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
-        <div className="table-toolbar flex items-center justify-between">
-          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
-            System Logs
-          </h2>
-          <div className="flex items-center gap-2">
-            <ResponsiveFilter
-              buttonContent={
-                <>
-                  <FunnelIcon className="size-4" />
-                  <span>Category</span>
-                  {category && (
-                    <>
-                      <div className="h-full w-px bg-gray-300 dark:bg-dark-450" />
-                      <Badge className="gap-1">
-                        {categoryLabels[category as LogCategory] || category}
-                      </Badge>
-                    </>
-                  )}
-                </>
-              }
-            >
-              <FilterList
-                value={category}
-                onChange={handleCategoryChange}
-                options={Object.entries(categoryLabels).map(([val, label]) => ({
-                  value: val,
-                  label,
-                }))}
-              />
-            </ResponsiveFilter>
-            <CollapsibleSearch
-              placeholder="Search logs..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-        </div>
-
         {loading ? (
-          <Card className="mt-3">
+          <Card>
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />
             </div>
           </Card>
         ) : logs.length === 0 ? (
-          <Card className="mt-3">
+          <Card>
             <EmptyState
               Icon={DocumentTextIcon}
               title="No log entries found"
@@ -438,7 +429,7 @@ export default function LogsPage() {
           </Card>
         ) : (
           <>
-            <Card className="mt-3">
+            <Card>
               <div className="min-w-full overflow-x-auto">
                 <Table hoverable className="w-full min-w-[860px]">
                   <THead>

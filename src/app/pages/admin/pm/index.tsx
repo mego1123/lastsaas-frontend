@@ -171,7 +171,7 @@ function FunnelTab() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex items-center justify-between pb-5">
         <h2 className="text-lg font-semibold">Conversion Funnel</h2>
         <RangeSelector value={range} onChange={setRange} />
       </div>
@@ -465,7 +465,7 @@ function RetentionTab() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="flex items-center justify-between pb-5">
         <h2 className="text-lg font-semibold">Cohort Retention</h2>
         <div className="flex gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-dark-600 dark:bg-dark-700">
           {(["weekly", "monthly"] as const).map((g) => (
@@ -1331,7 +1331,7 @@ export default function PMPage() {
 
   return (
     <Page title="Product Analytics">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Product Analytics

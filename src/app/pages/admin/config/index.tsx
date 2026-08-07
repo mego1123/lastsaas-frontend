@@ -127,8 +127,9 @@ export default function ConfigPage() {
 
   return (
     <Page title="Configuration">
-      <div className="transition-content px-(--margin-x) pb-8">
-        <div className="mb-8 flex items-center justify-between">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header — unified title + controls in one row */}
+        <div className="flex items-center justify-between pb-5">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
               Configuration
@@ -137,24 +138,7 @@ export default function ConfigPage() {
               {configs.length} variables
             </p>
           </div>
-          {canWrite && (
-            <Button
-              onClick={() => setShowCreate(true)}
-              color="primary"
-              variant="filled"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Add Variable
-            </Button>
-          )}
-        </div>
-
-        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
-        <div className="table-toolbar flex items-center justify-between">
-          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
-            Variables
-          </h2>
-          <div className="flex">
+          <div className="flex items-center gap-2">
             <CollapsibleSearch
               placeholder="Filter by name or description..."
               value={filter}
@@ -162,17 +146,28 @@ export default function ConfigPage() {
                 setFilter(e.target.value)
               }
             />
+            {canWrite && (
+              <Button
+                onClick={() => setShowCreate(true)}
+                color="primary"
+                variant="filled"
+                className="h-8 gap-2 rounded-md px-3 text-xs"
+              >
+                <PlusIcon className="size-4" />
+                <span>Add Variable</span>
+              </Button>
+            )}
           </div>
         </div>
 
         {loading ? (
-          <Card className="mt-3">
+          <Card>
             <div className="flex justify-center py-16">
               <Spinner className="h-8 w-8" color="primary" />
             </div>
           </Card>
         ) : filtered.length === 0 ? (
-          <Card className="mt-3">
+          <Card>
             <EmptyState
               Icon={Cog6ToothIcon}
               title={filter ? "No matching variables" : "No configuration variables"}
@@ -184,7 +179,7 @@ export default function ConfigPage() {
             />
           </Card>
         ) : (
-          <Card className="mt-3">
+          <Card>
             <div className="min-w-full overflow-x-auto">
             <Table hoverable className="w-full text-sm">
               <THead>

@@ -53,7 +53,7 @@ export default function SettingsPage() {
 
   return (
     <Page title="Settings">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         <div className="py-4 lg:py-5">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Settings

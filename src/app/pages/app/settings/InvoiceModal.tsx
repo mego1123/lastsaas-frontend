@@ -70,7 +70,7 @@ export default function InvoiceModal({
         as={DialogPanel}
         className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 dark:border-dark-600 dark:bg-dark-700"
       >
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
             Invoice
           </h3>

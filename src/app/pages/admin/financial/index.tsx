@@ -93,22 +93,17 @@ export default function AdminFinancialPage() {
 
   return (
     <Page title="Financial">
-      <div className="transition-content px-(--margin-x) pb-8">
-        {/* Header */}
-        <div className="py-5 lg:py-6">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
-            Financial
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-            All financial transactions across the platform
-          </p>
-        </div>
-
-        {/* Table toolbar — Tailux advanced-table pattern (ABOVE the Card) */}
-        <div className="table-toolbar flex items-center justify-between">
-          <h2 className="dark:text-dark-100 truncate text-base font-medium tracking-wide text-gray-800">
-            Transactions
-          </h2>
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header — unified title + controls in one row */}
+        <div className="flex items-center justify-between pb-5">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+              Financial
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
+              All financial transactions across the platform
+            </p>
+          </div>
           <div className="flex">
             <CollapsibleSearch
               placeholder="Search by description, invoice #, plan..."
@@ -122,13 +117,13 @@ export default function AdminFinancialPage() {
         </div>
 
         {loading ? (
-          <Card className="mt-3">
+          <Card>
             <div className="flex items-center justify-center py-16">
               <Spinner className="size-8" color="primary" />
             </div>
           </Card>
         ) : (
-          <Card className="mt-3">
+          <Card>
             {transactions.length === 0 ? (
               <EmptyState
                 Icon={CreditCardIcon}

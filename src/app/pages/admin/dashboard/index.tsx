@@ -201,7 +201,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <Page title="Admin Dashboard">
-        <div className="transition-content px-(--margin-x) pb-8">
+        <div className="transition-content px-(--margin-x) pt-6 pb-8">
           <div className="flex items-center justify-center py-20">
             <Spinner className="size-8" color="primary" />
           </div>
@@ -229,9 +229,9 @@ export default function AdminDashboardPage() {
 
   return (
     <Page title="Admin Dashboard">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
-        <div className="py-5 lg:py-6">
+        <div className="pb-5">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
             Admin Dashboard
           </h1>
@@ -337,7 +337,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Charts */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center justify-between pb-5">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-50">
             Business Metrics
           </h2>

@@ -99,9 +99,9 @@ export default function HealthPage() {
 
   return (
     <Page title="System Health">
-      <div className="transition-content px-(--margin-x) pb-8">
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
         {/* Header */}
-        <div className="py-5 lg:py-6">
+        <div className="pb-5">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-xl bg-success/15">
               <HeartIcon className="size-5 text-success dark:text-success-light" />

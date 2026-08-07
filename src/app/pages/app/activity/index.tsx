@@ -321,49 +321,43 @@ export default function ActivityPage() {
 
   return (
     <Page title="Activity">
-      <div className="transition-content px-(--margin-x) pb-8">
-        <div className="mb-6">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
-            Activity
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-            Recent activity in your organization
-          </p>
+      <div className="transition-content px-(--margin-x) pt-6 pb-8">
+        {/* Header — unified title + controls in one row */}
+        <div className="flex items-center justify-between pb-5">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+              Activity
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
+              Recent activity in your organization
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <ActionFilter value={action} onChange={handleActionChange} />
+            <CollapsibleSearch
+              placeholder="Search activity..."
+              value={debouncedSearch}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setDebouncedSearch(e.target.value)
+              }
+            />
+            {hasFilters && (
+              <Button
+                variant="flat"
+                color="error"
+                isIcon
+                className="size-8 rounded-full"
+                onClick={clearAllFilters}
+                title="Clear all filters"
+                aria-label="Clear all filters"
+              >
+                <XMarkIcon className="size-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="px-4 pb-5 sm:px-5">
-          {/* Header bar — mirrors CRM-Analytics UsersActivity header (h-14),
-              but now hosts the CollapsibleSearch + ActionFilter on the right
-              like the ProductsTable / courses-datatable toolbars. */}
-          <div className="flex h-14 min-w-0 flex-wrap items-center justify-between gap-2 py-3">
-            <h2 className="truncate font-medium tracking-wide text-gray-800 dark:text-dark-100">
-              Users Activity
-            </h2>
-            <div className="flex items-center gap-2">
-              <ActionFilter value={action} onChange={handleActionChange} />
-              <CollapsibleSearch
-                placeholder="Search activity..."
-                value={debouncedSearch}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setDebouncedSearch(e.target.value)
-                }
-              />
-              {hasFilters && (
-                <Button
-                  variant="flat"
-                  color="error"
-                  isIcon
-                  className="size-8 rounded-full"
-                  onClick={clearAllFilters}
-                  title="Clear all filters"
-                  aria-label="Clear all filters"
-                >
-                  <XMarkIcon className="size-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-
           {/* Optional second row: when a filter is active, show a small
               summary line so the user knows what's filtered. */}
           {hasFilters && (
