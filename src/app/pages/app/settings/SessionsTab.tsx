@@ -68,7 +68,7 @@ export default function SessionsTab() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">

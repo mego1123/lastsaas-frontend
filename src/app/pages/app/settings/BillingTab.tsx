@@ -95,7 +95,7 @@ export default function BillingTab() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       {/* Subscription Summary */}
       <Card className="p-6">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-dark-50">

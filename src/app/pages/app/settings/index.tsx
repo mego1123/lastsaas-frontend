@@ -11,6 +11,7 @@ import clsx from "clsx";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { Breadcrumbs, type BreadcrumbItem } from "@/components/shared/Breadcrumbs";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useBranding } from "@/app/contexts/branding/context";
 import ProfileTab from "./ProfileTab";
@@ -23,16 +24,12 @@ import BillingTab from "./BillingTab";
 //
 // Matches the STRUCTURAL PATTERN of the Tailux Hooks docs page
 // (src/app/pages/docs/hooks/index.tsx + DocsNavigation.tsx):
+//   - Header: h2 title + vertical divider + Breadcrumbs (DemoLayout pattern)
 //   - Left: a secondary in-page navigation list with active-state highlight
 //   - Right: a focused content pane showing ONLY the selected item's content
 //
 // On desktop: grid grid-cols-4 — left nav (1 col) + content (3 cols)
 // On mobile: the nav becomes a horizontal scrollable list above the content
-//
-// This is NOT the Tailux Settings page (pages/settings/Layout.tsx) which
-// uses a full sidebar panel — that's too heavy for our AppLayout which
-// already has a sidebar. The docs/hooks pattern is the right fit: a
-// lightweight in-page nav list + content pane.
 // ----------------------------------------------------------------------
 
 type SectionKey = "profile" | "security" | "sessions" | "billing";
@@ -43,6 +40,11 @@ interface Section {
   Icon: React.ComponentType<{ className?: string }>;
   Component: React.ComponentType;
 }
+
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: "App", path: "/dashboard" },
+  { title: "Settings" },
+];
 
 export default function SettingsPage() {
   const { user } = useAuthContext();
@@ -94,14 +96,15 @@ export default function SettingsPage() {
   return (
     <Page title="Settings">
       <div className="transition-content px-(--margin-x) pt-6 pb-8">
-        {/* Header */}
-        <div className="pb-5">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-dark-50">
+        {/* Header — DemoLayout pattern: h2 title + divider + Breadcrumbs */}
+        <div className="flex items-center space-x-4 pb-5 rtl:space-x-reverse">
+          <h2 className="truncate text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Settings
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-            Manage your account
-          </p>
+          </h2>
+          <div className="hidden self-stretch py-1 sm:flex">
+            <div className="h-full w-px bg-gray-300 dark:bg-dark-600"></div>
+          </div>
+          <Breadcrumbs items={breadcrumbs} className="max-sm:hidden" />
         </div>
 
         {/* Master-detail layout — matches docs/hooks pattern:
@@ -112,7 +115,7 @@ export default function SettingsPage() {
             {/* Title (desktop only, matches DocsNavigation h3) */}
             <h3 className="hidden items-center gap-4 text-base font-medium text-gray-800 dark:text-dark-100 lg:flex">
               <ListBulletIcon className="size-6" />
-              <span>Settings</span>
+              <span>Sections</span>
             </h3>
 
             {/* Nav items — vertical list on desktop, horizontal scroll on mobile */}
@@ -125,7 +128,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={() => setActiveSection(key)}
                       className={clsx(
-                        "relative inline-flex h-9 min-w-0 items-center gap-2 whitespace-nowrap border-l-2 px-3 py-2 text-sm transition-colors lg:w-full",
+                        "relative inline-flex h-9 min-w-0 items-center gap-2 whitespace-nowrap border-l px-3 py-2 text-sm transition-colors lg:w-full",
                         isActive
                           ? "border-primary-500 bg-primary-500/10 font-medium text-primary-600 dark:text-primary-400"
                           : "border-transparent text-gray-500 hover:text-gray-900 dark:text-dark-300 dark:hover:text-dark-50",
@@ -140,7 +143,7 @@ export default function SettingsPage() {
             </ul>
           </nav>
 
-          {/* Right content pane — shows ONLY the selected section */}
+          {/* Right content pane — shows ONLY the selected section, full width */}
           <div className="lg:col-span-3">
             <ActiveComponent />
           </div>
