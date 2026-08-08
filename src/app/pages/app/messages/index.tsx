@@ -159,25 +159,25 @@ function MessageRow({
           message.read ? "bg-transparent" : "bg-primary-500",
         )}
       />
-      <span className="flex min-w-0 flex-1 items-center gap-2">
-        <span className="min-w-0 truncate">
-          <span>{message.subject}</span>{" "}
-          <span className="dark:text-dark-300 font-normal text-gray-500">
-            {message.body}
-          </span>
+      <span className="min-w-0 flex-1 truncate">
+        <span>{message.subject}</span>{" "}
+        <span className="dark:text-dark-300 font-normal text-gray-500">
+          {message.body}
         </span>
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
         {message.isSystem && (
           <Badge
             color="primary"
             variant="outlined"
-            className="shrink-0 rounded-full max-sm:hidden"
+            className="rounded-full max-sm:hidden"
           >
             System
           </Badge>
         )}
-      </span>
-      <span className="text-xs-plus shrink-0 text-gray-400">
-        {new Date(message.createdAt).toLocaleDateString()}
+        <span className="text-xs-plus text-gray-400">
+          {new Date(message.createdAt).toLocaleDateString()}
+        </span>
       </span>
     </button>
   );
