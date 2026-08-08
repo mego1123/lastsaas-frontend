@@ -1,30 +1,20 @@
 // Import Dependencies
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { adminApi } from "@/utils/api";
-import { getErrorMessage } from "@/utils/errors";
-import type { AboutInfo } from "@/@types/lastsaas";
 
-// ----------------------------------------------------------------------
-// Migration of `frontend/src/pages/admin/AboutPage.tsx`.
 // ----------------------------------------------------------------------
 
 export default function AboutPage() {
-  const [about, setAbout] = useState<AboutInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    adminApi
-      .getAbout()
-      .then(setAbout)
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: about, isLoading: loading } = useQuery({
+    queryKey: ["admin", "about"],
+    queryFn: () => adminApi.getAbout(),
+    staleTime: 5 * 60 * 1000, // 5 minutes — version info rarely changes
+  });
 
   return (
     <Page title="About">
