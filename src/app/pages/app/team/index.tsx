@@ -81,9 +81,11 @@ export default function TeamPage() {
   });
   const members = membersData?.members ?? [];
 
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { data: plansData } = useQuery({
     queryKey: ["plans"],
     queryFn: () => plansApi.list(),
+    enabled: showUpgradeModal,
   });
   const currentPlanUserLimit = plansData?.currentPlanUserLimit ?? 0;
   const currentPlanId = plansData?.currentPlanId ?? "";
@@ -97,7 +99,6 @@ export default function TeamPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const [removeMember, setRemoveMember] = useState<TenantMember | null>(null);
   const [removeLoading, setRemoveLoading] = useState(false);
