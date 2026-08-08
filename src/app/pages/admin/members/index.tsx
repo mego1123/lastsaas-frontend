@@ -1,5 +1,6 @@
 // Import Dependencies
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   UserPlusIcon,
   TrashIcon,
@@ -31,9 +32,13 @@ export default function RootMembersPage() {
   const { user } = useAuthContext();
   const { currentTenant } = useTenantContext();
   const myRole = currentTenant?.role;
-  const [members, setMembers] = useState<TenantMember[]>([]);
-  const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: membersData, isLoading: loading } = useQuery({
+    queryKey: ["admin", "root-members"],
+    queryFn: () => adminApi.listRootMembers(),
+  });
+  const members: TenantMember[] = membersData?.members ?? [];
+  const invitations: Invitation[] = membersData?.invitations ?? [];
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [inviting, setInviting] = useState(false);
@@ -52,39 +57,8 @@ export default function RootMembersPage() {
   const canManage = myRole === "owner" || myRole === "admin";
   const isOwner = myRole === "owner";
 
-  const fetchData = () => {
-    adminApi
-      .listRootMembers()
-      .then((data) => {
-        setMembers(data.members);
-        setInvitations(data.invitations);
-      })
-      .catch((err) => toast.error(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  };
 
-  useEffect(() => {
-    const controller = new AbortController();
-    adminApi
-      .listRootMembers()
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          setMembers(data.members);
-          setInvitations(data.invitations);
-        }
-      })
-      .catch((err) => {
-        if (!controller.signal.aborted) {
-          toast.error(getErrorMessage(err));
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      });
-    return () => controller.abort();
-  }, []);
+
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +70,7 @@ export default function RootMembersPage() {
       setSuccess(`Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInvite(false);
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: ["admin", "root-members"] });
     } catch (err: unknown) {
       const data = (
         err as { response?: { data?: { error?: string } } }
@@ -111,7 +85,7 @@ export default function RootMembersPage() {
     setRemoveLoading(true);
     try {
       await adminApi.removeRootMember(member.userId);
-      setMembers(members.filter((m) => m.userId !== member.userId));
+      queryClient.invalidateQueries({ queryKey: ["admin", "root-members"] });
       toast.success(`${member.displayName} removed from root tenant`);
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -127,13 +101,7 @@ export default function RootMembersPage() {
   ) => {
     try {
       await adminApi.changeRootMemberRole(member.userId, newRole);
-      setMembers(
-        members.map((m) =>
-          m.userId === member.userId
-            ? { ...m, role: newRole as TenantMember["role"] }
-            : m,
-        ),
-      );
+      queryClient.invalidateQueries({ queryKey: ["admin", "root-members"] });
       toast.success(`${member.displayName}'s role changed to ${newRole}`);
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -144,7 +112,7 @@ export default function RootMembersPage() {
     setCancelLoading(true);
     try {
       await adminApi.cancelRootInvitation(inv.id);
-      setInvitations(invitations.filter((i) => i.id !== inv.id));
+      queryClient.invalidateQueries({ queryKey: ["admin", "root-members"] });
       toast.success(`Invitation to ${inv.email} canceled`);
     } catch (err) {
       toast.error(getErrorMessage(err));

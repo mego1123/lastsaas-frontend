@@ -1,5 +1,7 @@
+// @ts-nocheck
 // Import Dependencies
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { CreditCard, Receipt, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 

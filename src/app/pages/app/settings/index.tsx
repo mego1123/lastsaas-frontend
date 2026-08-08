@@ -135,16 +135,14 @@ export default function SettingsPage() {
             </div>
           </nav>
 
-          {/* Right content pane — ALL sections stay mounted, only the active
-              one is visible. This gives instant tab switching with no
-              refetch/loading flash (SPA behavior, matching Tailux docs pages
-              where switching nav items shows content instantly). */}
+          {/* Right content pane — only the active section is rendered.
+              Inactive tabs are unmounted so their effects/queries don't run
+              until selected. */}
           <div className="lg:col-span-3">
-            {sections.map(({ key, Component }) => (
-              <div key={key} className={key === activeSection ? undefined : "hidden"}>
-                <Component />
-              </div>
-            ))}
+            {(() => {
+              const ActiveComp = active.Component;
+              return <ActiveComp />;
+            })()}
           </div>
         </div>
       </div>
