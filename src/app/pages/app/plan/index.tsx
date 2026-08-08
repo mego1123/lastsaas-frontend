@@ -101,7 +101,7 @@ export default function PlanPage() {
   const { data: plansData, isLoading: loading } = useQuery({
     queryKey: ["plans", activeTenant],
     queryFn: () => plansApi.list(),
-    enabled: !!activeTenant,
+    
   });
 
   // Derive all values from cached query data — no manual state needed

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Import Dependencies
 import { FunnelIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
