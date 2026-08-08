@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Monitor, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,7 +35,7 @@ export default function SessionsTab() {
   };
 
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["auth", "sessions"] });
+    loadSessions();
      
   }, []);
 
@@ -59,7 +57,7 @@ export default function SessionsTab() {
     setConfirmLoading(true);
     try {
       await authApi.revokeAllSessions();
-      queryClient.invalidateQueries({ queryKey: ["auth", "sessions"] });
+      loadSessions();
       toast.success("All other sessions revoked");
     } catch (err) {
       toast.error(getErrorMessage(err));

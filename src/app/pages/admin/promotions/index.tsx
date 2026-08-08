@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -61,20 +59,34 @@ export default function PromotionsPage() {
   const role = currentTenant?.role;
   const canWrite = role === "owner" || role === "admin";
 
-  const queryClient = useQueryClient();
-  const { data: promoData, isLoading: loading, error: queryError } = useQuery({
-    queryKey: ["admin", "promotions"],
-    queryFn: () => adminApi.listPromotions(),
-  });
-  const promotions: Promotion[] = promoData?.promotions ?? [];
-  const productNames: Record<string, string> = {};
-  const loadError = queryError ? "Failed to load promotions" : "";
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [productNames, setProductNames] = useState<
+    Record<string, string>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string>("");
   const [showCreate, setShowCreate] = useState(false);
   const [editTarget, setEditTarget] = useState<Promotion | null>(null);
   const [deactivateTarget, setDeactivateTarget] =
     useState<Promotion | null>(null);
   const [deactivating, setDeactivating] = useState(false);
 
+  const fetchPromotions = useCallback(async () => {
+    try {
+      const data = await adminApi.listPromotions();
+      setPromotions(data.promotions);
+      setProductNames(data.productNames || {});
+      setLoadError("");
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      setLoadError(msg);
+      toast.error(msg);
+      setPromotions([]);
+      setProductNames({});
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();

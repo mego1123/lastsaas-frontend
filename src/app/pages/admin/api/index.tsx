@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -344,12 +342,8 @@ function RevealKeyModal({
 }
 
 function APIKeysSection({ canWrite }: { canWrite: boolean }) {
-  const queryClient = useQueryClient();
-  const { data: keysData, isLoading: loading } = useQuery({
-    queryKey: ["admin", "api-keys"],
-    queryFn: () => adminApi.listAPIKeys(),
-  });
-  const keys: ApiKey[] = keysData?.apiKeys ?? [];
+  const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [revealData, setRevealData] = useState<{
     apiKey: ApiKey;
@@ -359,8 +353,36 @@ function APIKeysSection({ canWrite }: { canWrite: boolean }) {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  const fetchKeys = useCallback(async () => {
+    try {
+      const data = await adminApi.listAPIKeys();
+      setKeys(data.apiKeys);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadData = async () => {
+      try {
+        const data = await adminApi.listAPIKeys();
+        if (!controller.signal.aborted) {
+          setKeys(data.apiKeys);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+    loadData();
+    return () => controller.abort();
+  }, []);
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
@@ -369,7 +391,7 @@ function APIKeysSection({ canWrite }: { canWrite: boolean }) {
     try {
       await adminApi.deleteAPIKey(deleteTarget.id);
       setDeleteTarget(null);
-      queryClient.invalidateQueries({ queryKey: ["admin", "api-keys"] });
+      fetchKeys();
     } catch (err: unknown) {
       setDeleteError(getErrorMessage(err));
     } finally {
@@ -485,7 +507,7 @@ function APIKeysSection({ canWrite }: { canWrite: boolean }) {
           onCreated={(data) => {
             setShowCreate(false);
             setRevealData(data);
-            queryClient.invalidateQueries({ queryKey: ["admin", "api-keys"] });
+            fetchKeys();
           }}
         />
       )}
@@ -647,9 +669,695 @@ function WebhookFormModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    adminApi
+      .listWebhookEventTypes()
+      .then((d) => {
+        setEventTypes(d.eventTypes);
+        // Auto-expand categories that have selected events
+        const cats = new Set<string>();
+        for (const et of d.eventTypes) {
+          if (
+            (webhook?.events || ["tenant.created"]).includes(
+              et.type as never,
+            )
+          ) {
+            cats.add(et.category);
+          }
+        }
+        setExpandedCategories(cats);
+      })
+      .catch((err) => toast.error(getErrorMessage(err)));
+  }, []);
 
+  const toggleEvent = (type: string) => {
+    setEvents((prev) =>
+      prev.includes(type)
+        ? prev.filter((e) => e !== type)
+        : [...prev, type],
+    );
+  };
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
+  };
 
+  const categoryEvents = (category: string) =>
+    eventTypes.filter((et) => et.category === category);
+
+  const toggleAllInCategory = (category: string) => {
+    const catTypes = categoryEvents(category).map((et) => et.type);
+    const allSelected = catTypes.every((t) => events.includes(t));
+    if (allSelected) {
+      setEvents((prev) => prev.filter((e) => !catTypes.includes(e)));
+    } else {
+      setEvents((prev) => [...new Set([...prev, ...catTypes])]);
+    }
+  };
+
+  // Ordered unique categories
+  const categories = eventTypes.reduce<string[]>((acc, et) => {
+    if (!acc.includes(et.category)) acc.push(et.category);
+    return acc;
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const data = {
+        name: name.trim(),
+        description: description.trim(),
+        url: url.trim(),
+        events,
+      };
+      if (webhook) {
+        const result = await adminApi.updateWebhook(webhook.id, data);
+        onSaved({ webhook: result.webhook });
+      } else {
+        const result = await adminApi.createWebhook(data);
+        onSaved({ webhook: result.webhook, secret: result.secret });
+      }
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <ModalShell onClose={onClose}>
+      <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
+        <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">
+          {webhook ? "Edit Webhook" : "Create Webhook"}
+        </h3>
+        <Button
+          isIcon
+          variant="flat"
+          color="neutral"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </Button>
+      </div>
+      <div className="space-y-4 p-6">
+        <Input
+          label="Name"
+          placeholder="e.g., Provisioning Service"
+          value={name}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setName(e.target.value)
+          }
+        />
+        <Input
+          label="Description"
+          placeholder="What this webhook does"
+          value={description}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setDescription(e.target.value)
+          }
+        />
+        <Input
+          label="Callback URL"
+          placeholder="https://your-service.com/webhook"
+          value={url}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setUrl(e.target.value)
+          }
+        />
+        {!webhook && (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-dark-600 dark:bg-dark-600">
+            <p className="text-xs text-gray-500 dark:text-dark-300">
+              A signing secret will be automatically generated for
+              HMAC-SHA256 signature verification.
+            </p>
+          </div>
+        )}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <label className="block text-sm font-medium">Events</label>
+            <span className="text-xs text-gray-400 dark:text-dark-400">
+              {events.length} selected
+            </span>
+          </div>
+          <div className="space-y-2">
+            {categories.map((category) => {
+              const catTypes = categoryEvents(category);
+              const selectedCount = catTypes.filter((et) =>
+                events.includes(et.type),
+              ).length;
+              const allSelected = selectedCount === catTypes.length;
+              const someSelected = selectedCount > 0 && !allSelected;
+              const expanded = expandedCategories.has(category);
+
+              return (
+                <div
+                  key={category}
+                  className="overflow-hidden rounded-lg border border-gray-300 dark:border-dark-600"
+                >
+                  <div
+                    className="flex cursor-pointer items-center gap-3 bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-dark-600 dark:hover:bg-dark-500"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <Checkbox
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={() => toggleAllInCategory(category)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-medium">{category}</span>
+                      <span className="ml-2 text-xs text-gray-400 dark:text-dark-400">
+                        {selectedCount}/{catTypes.length}
+                      </span>
+                    </div>
+                    {expanded ? (
+                      <ChevronUpIcon className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                  {expanded && (
+                    <div className="border-t border-gray-300 dark:border-dark-600">
+                      {catTypes.map((et) => (
+                        <label
+                          key={et.type}
+                          className="flex cursor-pointer items-start gap-3 px-3 py-2.5 pl-10 transition-colors hover:bg-gray-50 dark:hover:bg-dark-600/50"
+                        >
+                          <Checkbox
+                            checked={events.includes(et.type)}
+                            onChange={() => toggleEvent(et.type)}
+                          />
+                          <div className="min-w-0">
+                            <span className="font-mono text-sm">
+                              {et.type}
+                            </span>
+                            <p className="mt-0.5 text-xs text-gray-500 dark:text-dark-300">
+                              {et.description}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {error && (
+          <div className="rounded-lg border border-error/20 bg-error/10 p-3 text-sm text-error dark:text-error-light">
+            {error}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-end gap-3 p-6 pt-0">
+        <Button variant="outlined" color="neutral" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={
+            saving || !name.trim() || !url.trim() || events.length === 0
+          }
+          color="primary"
+          variant="filled"
+        >
+          {saving
+            ? "Saving..."
+            : webhook
+              ? "Save Changes"
+              : "Create Webhook"}
+        </Button>
+      </div>
+    </ModalShell>
+  );
+}
+
+function WebhookDetailModal({
+  webhookId,
+  onClose,
+  onRefresh,
+  canWrite,
+}: {
+  webhookId: string;
+  onClose: () => void;
+  onRefresh: () => void;
+  canWrite: boolean;
+}) {
+  const [hook, setHook] = useState<WebhookType | null>(null);
+  const [secret, setSecret] = useState("");
+  const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<WebhookDelivery | null>(
+    null,
+  );
+  const [editing, setEditing] = useState(false);
+  const [expandedDelivery, setExpandedDelivery] = useState<string | null>(
+    null,
+  );
+  const [regenerating, setRegenerating] = useState(false);
+  const [secretRevealed, setSecretRevealed] = useState(false);
+  const [secretCopied, setSecretCopied] = useState(false);
+
+  const fetchDetail = useCallback(async () => {
+    try {
+      const data = await adminApi.getWebhook(webhookId);
+      setHook(data.webhook);
+      setDeliveries(data.deliveries);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }, [webhookId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadData = async () => {
+      try {
+        const data = await adminApi.getWebhook(webhookId);
+        if (!controller.signal.aborted) {
+          setHook(data.webhook);
+          setDeliveries(data.deliveries);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+    loadData();
+    return () => controller.abort();
+  }, [webhookId]);
+
+  const handleTest = async () => {
+    if (!hook) return;
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const data = await adminApi.testWebhook(hook.id);
+      setTestResult(data.delivery);
+      fetchDetail();
+    } catch {
+      /* ignore */
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!hook) return;
+    setRegenerating(true);
+    try {
+      const data = await adminApi.regenerateWebhookSecret(hook.id);
+      setSecret(data.secret);
+      setHook({ ...hook, secretPreview: data.secretPreview });
+      setSecretRevealed(true);
+    } catch {
+      /* ignore */
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
+  const handleCopySecret = () => {
+    navigator.clipboard.writeText(secret);
+    setSecretCopied(true);
+    setTimeout(() => setSecretCopied(false), 2000);
+  };
+
+  if (loading) {
+    return (
+      <ModalShell onClose={onClose} maxWidth="max-w-2xl">
+        <div className="flex justify-center py-12">
+          <Spinner className="h-8 w-8" color="primary" />
+        </div>
+      </ModalShell>
+    );
+  }
+
+  if (!hook) return null;
+
+  if (editing) {
+    return (
+      <WebhookFormModal
+        webhook={hook}
+        onClose={() => setEditing(false)}
+        onSaved={() => {
+          setEditing(false);
+          fetchDetail();
+          onRefresh();
+        }}
+      />
+    );
+  }
+
+  return (
+    <ModalShell onClose={onClose} maxWidth="max-w-2xl">
+      <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-dark-600">
+        <div>
+          <h3 className="text-base font-medium tracking-wide text-gray-800 dark:text-dark-100">{hook.name}</h3>
+          {hook.description && (
+            <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-300">
+              {hook.description}
+            </p>
+          )}
+        </div>
+        <Button
+          isIcon
+          variant="flat"
+          color="neutral"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </Button>
+      </div>
+      <div className="space-y-6 p-6">
+        {/* Config summary */}
+        <div className="space-y-4 text-sm">
+          <div>
+            <span className="text-xs text-gray-400 dark:text-dark-400">
+              URL
+            </span>
+            <p className="mt-0.5 break-all font-mono text-xs text-gray-500 dark:text-dark-300">
+              {hook.url}
+            </p>
+          </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs text-gray-400 dark:text-dark-400">
+                Signing Secret
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSecretRevealed(!secretRevealed)}
+                  className="text-xs text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400"
+                >
+                  {secretRevealed ? "Hide" : "Reveal"}
+                </button>
+                {canWrite && (
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={regenerating}
+                    className="text-xs text-gray-500 transition-colors hover:text-gray-700 disabled:opacity-50 dark:text-dark-400 dark:hover:text-dark-200"
+                  >
+                    {regenerating ? "Regenerating..." : "Regenerate"}
+                  </button>
+                )}
+              </div>
+            </div>
+            {secretRevealed ? (
+              <div className="relative">
+                <code className="block w-full break-all rounded-lg border border-gray-300 bg-gray-50 p-2.5 pr-10 font-mono text-xs text-success dark:border-dark-600 dark:bg-dark-600">
+                  {secret}
+                </code>
+                <button
+                  onClick={handleCopySecret}
+                  className="absolute right-1.5 top-1.5 rounded-md bg-gray-200 p-1.5 transition-colors hover:bg-gray-300 dark:bg-dark-500 dark:hover:bg-dark-400"
+                  title="Copy to clipboard"
+                >
+                  {secretCopied ? (
+                    <CheckIcon className="h-3.5 w-3.5 text-success" />
+                  ) : (
+                    <ClipboardIcon className="h-3.5 w-3.5 text-gray-500 dark:text-dark-300" />
+                  )}
+                </button>
+              </div>
+            ) : (
+              <code className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 font-mono text-xs text-gray-400 dark:border-dark-600 dark:bg-dark-600 dark:text-dark-400">
+                whsec_••••••••••••••••••••••••••••{hook.secretPreview}
+              </code>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-xs text-gray-400 dark:text-dark-400">
+                Events
+              </span>
+              <div className="mt-0.5 flex flex-wrap gap-1">
+                {hook.events.map((e) => (
+                  <span
+                    key={e}
+                    className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs text-gray-500 dark:bg-dark-600 dark:text-dark-300"
+                  >
+                    {e}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-400 dark:text-dark-400">
+                Created
+              </span>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-dark-300">
+                {formatDate(hook.createdAt)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        {canWrite && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setEditing(true)}
+              variant="outlined"
+              color="neutral"
+              className="text-xs"
+            >
+              <PencilSquareIcon className="h-3.5 w-3.5" />
+              Edit
+            </Button>
+            <Button
+              onClick={handleTest}
+              disabled={testing}
+              color="primary"
+              variant="soft"
+              className="text-xs"
+            >
+              <PlayIcon className="h-3.5 w-3.5" />
+              {testing ? "Sending..." : "Send Test"}
+            </Button>
+          </div>
+        )}
+
+        {/* Test result */}
+        {testResult && (
+          <div
+            className={`rounded-xl border p-4 ${
+              testResult.success
+                ? "border-success/20 bg-success/5"
+                : "border-error/20 bg-error/5"
+            }`}
+          >
+            <p
+              className={`text-sm font-medium ${
+                testResult.success
+                  ? "text-success"
+                  : "text-error dark:text-error-light"
+              }`}
+            >
+              Test {testResult.success ? "succeeded" : "failed"} —{" "}
+              {testResult.responseCode || "no response"} (
+              {testResult.durationMs}ms)
+            </p>
+            {testResult.responseBody && (
+              <pre className="mt-2 max-h-24 overflow-y-auto whitespace-pre-wrap font-mono text-xs text-gray-500 dark:text-dark-300">
+                {testResult.responseBody}
+              </pre>
+            )}
+          </div>
+        )}
+
+        {/* Testing guide */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-dark-600 dark:bg-dark-600">
+          <h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-300">
+            Testing Your Webhook
+          </h4>
+          <ul className="space-y-1.5 text-xs text-gray-500 dark:text-dark-400">
+            <li>
+              1. Use the &ldquo;Send Test&rdquo; button to deliver a sample{" "}
+              <code className="text-gray-400 dark:text-dark-300">
+                tenant.created
+              </code>{" "}
+              event with test data.
+            </li>
+            <li>
+              2. Test deliveries include an{" "}
+              <code className="text-gray-400 dark:text-dark-300">
+                X-Webhook-Test: true
+              </code>{" "}
+              header so your handler can distinguish them.
+            </li>
+            <li>
+              3. Verify the{" "}
+              <code className="text-gray-400 dark:text-dark-300">
+                X-Webhook-Signature
+              </code>{" "}
+              header by computing{" "}
+              <code className="text-gray-400 dark:text-dark-300">
+                HMAC-SHA256(payload, secret)
+              </code>{" "}
+              and comparing against the header value.
+            </li>
+            <li>
+              4. Your endpoint should return a 2xx status code to
+              acknowledge receipt.
+            </li>
+            <li>
+              5. For local development, use a tunnel service like ngrok to
+              expose your local server.
+            </li>
+          </ul>
+        </div>
+
+        {/* Recent deliveries */}
+        <div>
+          <h4 className="mb-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-dark-300">
+            Recent Deliveries
+          </h4>
+          {deliveries.length === 0 ? (
+            <p className="text-xs text-gray-400 dark:text-dark-400">
+              No deliveries yet.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {deliveries.map((d) => (
+                <div
+                  key={d.id}
+                  className="overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600"
+                >
+                  <button
+                    onClick={() =>
+                      setExpandedDelivery(
+                        expandedDelivery === d.id ? null : d.id,
+                      )
+                    }
+                    className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-gray-50 dark:hover:bg-dark-600/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`h-2 w-2 rounded-full ${d.success ? "bg-success" : "bg-error"}`}
+                      />
+                      <span className="font-mono text-xs text-gray-500 dark:text-dark-300">
+                        {d.eventType}
+                      </span>
+                      <span className="text-xs text-gray-400 dark:text-dark-400">
+                        {d.responseCode || "err"} &middot; {d.durationMs}ms
+                        {d.retryCount > 0
+                          ? ` · retry ${d.retryCount}/${d.maxRetries}`
+                          : ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-400 dark:text-dark-400">
+                        {timeAgo(d.createdAt)}
+                      </span>
+                      {expandedDelivery === d.id ? (
+                        <ChevronUpIcon className="h-3.5 w-3.5 text-gray-400" />
+                      ) : (
+                        <ChevronDownIcon className="h-3.5 w-3.5 text-gray-400" />
+                      )}
+                    </div>
+                  </button>
+                  {expandedDelivery === d.id && (
+                    <div className="space-y-2 border-t border-gray-200 px-4 pb-3 dark:border-dark-600">
+                      <div className="mt-2">
+                        <span className="text-xs text-gray-400 dark:text-dark-400">
+                          Payload
+                        </span>
+                        <pre className="mt-1 max-h-32 overflow-y-auto whitespace-pre-wrap rounded bg-gray-50 p-2 font-mono text-xs text-gray-500 dark:bg-dark-600 dark:text-dark-300">
+                          {(() => {
+                            try {
+                              return JSON.stringify(
+                                JSON.parse(d.payload),
+                                null,
+                                2,
+                              );
+                            } catch {
+                              return d.payload;
+                            }
+                          })()}
+                        </pre>
+                      </div>
+                      {d.responseBody && (
+                        <div>
+                          <span className="text-xs text-gray-400 dark:text-dark-400">
+                            Response
+                          </span>
+                          <pre className="mt-1 max-h-24 overflow-y-auto whitespace-pre-wrap rounded bg-gray-50 p-2 font-mono text-xs text-gray-500 dark:bg-dark-600 dark:text-dark-300">
+                            {d.responseBody}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function WebhooksSection({ canWrite }: { canWrite: boolean }) {
+  const [hooks, setHooks] = useState<WebhookType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<WebhookType | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [revealData, setRevealData] = useState<{
+    secret: string;
+    webhookName: string;
+  } | null>(null);
+
+  const fetchHooks = useCallback(async () => {
+    try {
+      const data = await adminApi.listWebhooks();
+      setHooks(data.webhooks);
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadData = async () => {
+      try {
+        const data = await adminApi.listWebhooks();
+        if (!controller.signal.aborted) {
+          setHooks(data.webhooks);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+    loadData();
+    return () => controller.abort();
+  }, []);
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;

@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useCallback } from "react";
 import {
   PlusIcon,
   TrashIcon,
@@ -63,19 +61,9 @@ export default function PlansPage() {
   const role = currentTenant?.role ?? null;
   const canWrite = role === "owner" || role === "admin";
 
-  const queryClient = useQueryClient();
-  const { data: plansData, isLoading: loading } = useQuery({
-    queryKey: ["admin", "plans"],
-    queryFn: () => adminApi.listPlans(),
-    staleTime: 2 * 60 * 1000, // 2 minutes — plans don't change often
-  });
-  const plans: Plan[] = plansData?.plans ?? [];
-  const { data: bundlesData } = useQuery({
-    queryKey: ["admin", "credit-bundles"],
-    queryFn: () => adminApi.listBundles(),
-    staleTime: 2 * 60 * 1000,
-  });
-  const bundles: CreditBundle[] = bundlesData?.bundles ?? [];
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [bundles, setBundles] = useState<CreditBundle[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editPlan, setEditPlan] = useState<Plan | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Plan | null>(null);
@@ -92,7 +80,25 @@ export default function PlansPage() {
   const [archiveTarget, setArchiveTarget] = useState<Plan | null>(null);
   const [archiveLoading, setArchiveLoading] = useState(false);
 
+  const fetchPlans = useCallback(async () => {
+    try {
+      const data = await adminApi.listPlans();
+      setPlans(data.plans);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
+  const fetchBundles = useCallback(async () => {
+    try {
+      const data = await adminApi.listBundles();
+      setBundles(data.bundles);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -128,7 +134,7 @@ export default function PlansPage() {
       await adminApi.deletePlan(deleteTarget.id);
       setDeleteTarget(null);
       toast.success(`${deleteTarget.name} deleted`);
-      void queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+      void fetchPlans();
     } catch (err: unknown) {
       setDeleteError(getErrorMessage(err));
     } finally {
@@ -147,7 +153,7 @@ export default function PlansPage() {
         await adminApi.archivePlan(archiveTarget.id);
         toast.success(`${archiveTarget.name} archived`);
       }
-      void queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+      void fetchPlans();
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -164,7 +170,7 @@ export default function PlansPage() {
       await adminApi.deleteBundle(deleteBundleTarget.id);
       setDeleteBundleTarget(null);
       toast.success(`${deleteBundleTarget.name} deleted`);
-      void queryClient.invalidateQueries({ queryKey: ["admin", "credit-bundles"] });
+      void fetchBundles();
     } catch (err: unknown) {
       setDeleteBundleError(getErrorMessage(err));
     } finally {
@@ -416,7 +422,7 @@ export default function PlansPage() {
             onClose={() => setShowCreate(false)}
             onSaved={() => {
               setShowCreate(false);
-              void queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+              void fetchPlans();
             }}
           />
         )}
@@ -430,7 +436,7 @@ export default function PlansPage() {
             onClose={() => setEditPlan(null)}
             onSaved={() => {
               setEditPlan(null);
-              void queryClient.invalidateQueries({ queryKey: ["admin", "plans"] });
+              void fetchPlans();
             }}
           />
         )}
@@ -613,7 +619,7 @@ export default function PlansPage() {
             onClose={() => setShowCreateBundle(false)}
             onSaved={() => {
               setShowCreateBundle(false);
-              void queryClient.invalidateQueries({ queryKey: ["admin", "credit-bundles"] });
+              void fetchBundles();
             }}
           />
         )}
@@ -626,7 +632,7 @@ export default function PlansPage() {
             onClose={() => setEditBundle(null)}
             onSaved={() => {
               setEditBundle(null);
-              void queryClient.invalidateQueries({ queryKey: ["admin", "credit-bundles"] });
+              void fetchBundles();
             }}
           />
         )}

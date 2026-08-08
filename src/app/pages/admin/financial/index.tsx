@@ -1,7 +1,7 @@
 // Import Dependencies
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
@@ -20,6 +20,7 @@ import {
 import { CollapsibleSearch } from "@/components/shared/CollapsibleSearch";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { adminApi } from "@/utils/api";
+import { getErrorMessage } from "@/utils/errors";
 import type { FinancialTransaction } from "@/@types/lastsaas";
 
 // ----------------------------------------------------------------------
@@ -52,8 +53,14 @@ function transactionTypeLabel(type: string): string {
 // ----------------------------------------------------------------------
 
 export default function AdminFinancialPage() {
+  const [transactions, setTransactions] = useState<FinancialTransaction[]>(
+    [],
+  );
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Debounce search by 300ms
@@ -62,18 +69,25 @@ export default function AdminFinancialPage() {
     return () => clearTimeout(t);
   }, [search]);
 
-  // React Query — cached data
-  const { data, isLoading: loading } = useQuery({
-    queryKey: ["admin", "financial", page, debouncedSearch],
-    queryFn: () =>
-      adminApi.listFinancialTransactions({
+  const loadData = useCallback(() => {
+    setLoading(true);
+    adminApi
+      .listFinancialTransactions({
         page,
         perPage: PER_PAGE,
         search: debouncedSearch || undefined,
-      }),
-  });
-  const transactions: FinancialTransaction[] = data?.transactions ?? [];
-  const total = data?.total ?? 0;
+      })
+      .then((data) => {
+        setTransactions(data.transactions);
+        setTotal(data.total);
+      })
+      .catch((err) => toast.error(getErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, [page, debouncedSearch]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const totalPages = Math.ceil(total / PER_PAGE);
 

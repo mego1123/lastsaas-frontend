@@ -1,7 +1,7 @@
 // Import Dependencies
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Zap, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
@@ -9,7 +9,11 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { bundlesApi, plansApi, billingApi } from "@/utils/api";
+import type { CreditBundle } from "@/@types/lastsaas";
+import { getErrorMessage } from "@/utils/errors";
 
+// ----------------------------------------------------------------------
+// Migration of `frontend/src/pages/app/BuyCreditsPage.tsx` (128 LOC).
 // ----------------------------------------------------------------------
 
 function formatPrice(cents: number): string {
@@ -17,23 +21,22 @@ function formatPrice(cents: number): string {
 }
 
 export default function BuyCreditsPage() {
+  const [bundles, setBundles] = useState<CreditBundle[]>([]);
+  const [totalCredits, setTotalCredits] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
-  const { data: bundleData, isLoading: bundlesLoading } = useQuery({
-    queryKey: ["credit-bundles"],
-    queryFn: () => bundlesApi.list(),
-  });
-  const bundles = bundleData?.bundles ?? [];
-
-  const { data: plansData } = useQuery({
-    queryKey: ["plans"],
-    queryFn: () => plansApi.list(),
-  });
-  const totalCredits =
-    (plansData?.tenantSubscriptionCredits ?? 0) +
-    (plansData?.tenantPurchasedCredits ?? 0);
-
-  const loading = bundlesLoading;
+  useEffect(() => {
+    Promise.all([bundlesApi.list(), plansApi.list()])
+      .then(([bundleData, planData]) => {
+        setBundles(bundleData.bundles);
+        setTotalCredits(
+          planData.tenantSubscriptionCredits + planData.tenantPurchasedCredits,
+        );
+      })
+      .catch((err) => toast.error(getErrorMessage(err)))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleBuy = async (bundleId: string) => {
     setCheckoutLoading(bundleId);
@@ -62,6 +65,7 @@ export default function BuyCreditsPage() {
   return (
     <Page title="Buy Credits">
       <div className="px-(--margin-x) pt-6 pb-8">
+        {/* Header */}
         <div className="mb-8">
           <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Buy Credits

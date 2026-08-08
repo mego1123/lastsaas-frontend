@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { CheckCircle, Shield, Fingerprint, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 

@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -76,12 +74,8 @@ export default function ConfigPage() {
   const role = currentTenant?.role;
   const canWrite = role === "owner" || role === "admin";
 
-  const queryClient = useQueryClient();
-  const { data: configsData, isLoading: loading } = useQuery({
-    queryKey: ["admin", "config"],
-    queryFn: () => adminApi.listConfig(),
-  });
-  const configs: ConfigVar[] = configsData ?? [];
+  const [configs, setConfigs] = useState<ConfigVar[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [editVar, setEditVar] = useState<ConfigVar | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -90,6 +84,16 @@ export default function ConfigPage() {
   );
   const [deleting, setDeleting] = useState(false);
 
+  const fetchConfigs = useCallback(async () => {
+    try {
+      const data = await adminApi.listConfig();
+      setConfigs(data.configs);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchConfigs();

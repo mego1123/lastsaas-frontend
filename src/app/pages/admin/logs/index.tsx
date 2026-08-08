@@ -1,7 +1,5 @@
-// @ts-nocheck
 // Import Dependencies
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
   DocumentTextIcon,
@@ -111,6 +109,8 @@ const PER_PAGE_OPTIONS = [25, 50, 100];
 
 export default function LogsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(50);
   const [activeSeverities, setActiveSeverities] = useState<Set<LogSeverity>>(
@@ -121,13 +121,22 @@ export default function LogsPage() {
   const [userId, setUserId] = useState(searchParams.get("userId") || "");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [loading, setLoading] = useState(true);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [severityCounts, setSeverityCounts] = useState<
+    Record<string, number>
+  >({});
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // React Query — logs data (short staleTime for monitoring, 0 = always fresh)
-  const { data: logsData, isLoading: loading } = useQuery({
-    queryKey: ["admin", "logs", page, perPage, activeSeverities.size < 5 ? Array.from(activeSeverities).join(",") : "all", category, search, userId, fromDate, toDate],
-    queryFn: () => {
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchLogs = useCallback(async () => {
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setLoading(true);
+    try {
       const params: Record<string, string | number> = { page, perPage };
       if (activeSeverities.size > 0 && activeSeverities.size < 5) {
         params.severity = Array.from(activeSeverities).join(",");
@@ -137,34 +146,37 @@ export default function LogsPage() {
       if (userId) params.userId = userId;
       if (fromDate) params.fromDate = fromDate;
       if (toDate) params.toDate = toDate;
-      return adminApi.listLogs(params);
-    },
-    staleTime: 0, // Always refetch — logs are real-time monitoring
-  });
-  const logs: SystemLog[] = logsData?.logs ?? [];
-  const total = logsData?.total ?? 0;
+      const data = await adminApi.listLogs(params);
+      if (!controller.signal.aborted) {
+        setLogs(data.logs);
+        setTotal(data.total);
+      }
+    } catch {
+      // ignore
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [page, perPage, activeSeverities, category, search, userId, fromDate, toDate]);
 
-  // React Query — severity counts (also always fresh)
-  const { data: countsData } = useQuery({
-    queryKey: ["admin", "logs", "severity-counts", category, fromDate, toDate],
-    queryFn: () => {
+  const fetchSeverityCounts = useCallback(async () => {
+    try {
       const params: Record<string, string> = {};
       if (category) params.category = category;
       if (fromDate) params.fromDate = fromDate;
       if (toDate) params.toDate = toDate;
-      return adminApi.logSeverityCounts(params);
-    },
-    staleTime: 0,
-  });
-  const severityCounts: Record<string, number> = countsData?.counts ?? {};
-  const autoRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+      const data = await adminApi.logSeverityCounts(params);
+      setSeverityCounts(data.counts);
+    } catch {
+      // ignore
+    }
+  }, [category, fromDate, toDate]);
 
-  const abortRef = useRef<AbortController | null>(null);
-
-
-
-
-
+  useEffect(() => {
+    void fetchLogs();
+  }, [fetchLogs]);
+  useEffect(() => {
+    void fetchSeverityCounts();
+  }, [fetchSeverityCounts]);
 
   // Auto-refresh (pauses when tab is in background)
   useEffect(() => {
@@ -247,7 +259,8 @@ export default function LogsPage() {
   };
 
   const handleRefresh = () => {
-    // React Query refetches automatically with staleTime: 0
+    void fetchLogs();
+    void fetchSeverityCounts();
   };
 
   return (
