@@ -1,7 +1,11 @@
 // Import Dependencies
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { EnvelopeIcon, FingerPrintIcon } from "@heroicons/react/24/outline";
+import {
+  EnvelopeIcon,
+  FingerPrintIcon,
+  LockClosedIcon,
+} from "@heroicons/react/24/outline";
 import {
   ArrowRightOnRectangleIcon as ArrowRightOnRectangleIconSolid,
   EnvelopeIcon as EnvelopeIconSolid,
@@ -15,7 +19,10 @@ import { authApi } from "@/utils/api";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/configs/auth";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Form/Input";
 
+// ----------------------------------------------------------------------
+// OAuth provider icons (brand SVGs)
 // ----------------------------------------------------------------------
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -42,6 +49,62 @@ function GithubIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 .5C5.37.5 0 5.78 0 12.292c0 5.211 3.438 9.63 8.205 11.188.6.111.82-.254.82-.567 0-.28-.01-1.022-.015-2.005-3.338.711-4.042-1.582-4.042-1.582-.546-1.361-1.335-1.725-1.335-1.725-1.087-.731.084-.716.084-.716 1.205.082 1.838 1.215 1.838 1.215 1.07 1.803 2.809 1.282 3.495.981.108-.763.417-1.282.76-1.577-2.665-.295-5.466-1.309-5.466-5.827 0-1.287.465-2.339 1.235-3.164-.135-.298-.54-1.497.105-3.121 0 0 1.005-.316 3.3 1.209.96-.262 1.98-.392 3-.398 1.02.006 2.04.136 3 .398 2.28-1.525 3.285-1.209 3.285-1.209.645 1.624.24 2.823.12 3.121.765.825 1.23 1.877 1.23 3.164 0 4.53-2.805 5.527-5.475 5.817.42.354.81 1.077.81 2.182 0 1.578-.015 2.846-.015 3.229 0 .309.21.678.825.561C20.565 21.917 24 17.495 24 12.292 24 5.78 18.627.5 12 .5z" />
     </svg>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Shared layout helpers (Tailux sign-in-1 pattern)
+// ----------------------------------------------------------------------
+
+function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="grid min-h-screen w-full grow grid-cols-1 place-items-center">
+      <div className="w-full max-w-[26rem] p-4 sm:px-5">{children}</div>
+    </main>
+  );
+}
+
+function AuthHeader({
+  logoUrl,
+  appName,
+  heading,
+  subtext,
+  fallbackIcon: FallbackIcon,
+}: {
+  logoUrl?: string;
+  appName?: string;
+  heading: string;
+  subtext: string;
+  fallbackIcon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="text-center">
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt={appName || "Logo"}
+          className="mx-auto h-16 object-contain"
+        />
+      ) : (
+        <FallbackIcon className="mx-auto size-16 text-primary-600 dark:text-primary-400" />
+      )}
+      <div className="mt-4">
+        <h2 className="text-2xl font-semibold text-gray-600 dark:text-dark-100">
+          {heading}
+        </h2>
+        <p className="text-gray-400 dark:text-dark-300">{subtext}</p>
+      </div>
+    </div>
+  );
+}
+
+function Divider({ label }: { label: string }) {
+  return (
+    <div className="my-7 flex items-center space-x-3 text-xs">
+      <div className="h-px flex-1 bg-gray-200 dark:bg-dark-500" />
+      <p>{label}</p>
+      <div className="h-px flex-1 bg-gray-200 dark:bg-dark-500" />
+    </div>
   );
 }
 
@@ -144,73 +207,59 @@ export default function LoginPage() {
   const logoUrl = branding.logoUrl;
 
   const hasOAuth =
-    providers && (providers.google || providers.github || providers.microsoft);
+    providers &&
+    (providers.google || providers.github || providers.microsoft);
+  const hasAltMethods =
+    hasOAuth || providers?.passkeys || providers?.magicLink;
 
   // MFA challenge screen
   if (mfaPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-dark-900 px-4">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500">
-              <KeyIconSolid className="size-7 text-white" />
+      <AuthLayout>
+        <AuthHeader
+          logoUrl={logoUrl}
+          appName={branding.appName}
+          heading="Two-Factor Authentication"
+          subtext="Enter the code from your authenticator app or a recovery code"
+          fallbackIcon={KeyIconSolid}
+        />
+        <Card className="mt-5 rounded-lg p-5 lg:p-7">
+          {error && (
+            <div className="mb-4 rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
+              {error}
             </div>
-            <h1 className="text-xl font-semibold text-white">
-              Two-Factor Authentication
-            </h1>
-            <p className="mt-2 text-dark-400">
-              Enter the code from your authenticator app or a recovery code
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleMfaSubmit}
-            className="space-y-4 rounded-2xl border border-dark-800 bg-dark-900/50 p-6 backdrop-blur-sm"
-          >
-            {error && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark-300">
-                Verification Code
-              </label>
-              <input
-                type="text"
-                required
-                autoFocus
-                autoComplete="one-time-code"
-                inputMode="numeric"
-                value={mfaCode}
-                onChange={(e) => setMfaCode(e.target.value)}
-                className="w-full rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-center text-lg tracking-widest text-white placeholder-dark-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="000000"
-                maxLength={32}
-              />
-            </div>
-
+          )}
+          <form onSubmit={handleMfaSubmit} className="space-y-4">
+            <Input
+              label="Verification Code"
+              placeholder="000000"
+              required
+              autoFocus
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              maxLength={32}
+              value={mfaCode}
+              onChange={(e) => setMfaCode(e.target.value)}
+              classNames={{ input: "text-center tracking-widest" }}
+            />
             <Button
               type="submit"
               color="primary"
-              variant="filled"
               className="w-full"
               disabled={loading}
             >
               {loading ? "Verifying..." : "Verify"}
             </Button>
-
             <button
               type="button"
               onClick={clearMfaPending}
-              className="w-full text-sm text-dark-400 transition-colors hover:text-dark-300"
+              className="w-full text-sm text-gray-400 transition-colors hover:text-gray-600 dark:text-dark-300 dark:hover:text-dark-100"
             >
               Back to login
             </button>
           </form>
-        </div>
-      </div>
+        </Card>
+      </AuthLayout>
     );
   }
 
@@ -218,254 +267,223 @@ export default function LoginPage() {
   if (showMagicLink) {
     if (magicLinkSent) {
       return (
-        <div className="flex min-h-screen items-center justify-center bg-dark-900 px-4">
-          <div className="w-full max-w-md">
-            <div className="rounded-2xl border border-dark-800 bg-dark-900/50 p-8 text-center backdrop-blur-sm">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600">
-                <EnvelopeIconSolid className="size-7 text-white" />
-              </div>
-              <h1 className="mb-2 text-xl font-bold text-white">
-                Check your email
-              </h1>
-              <p className="mb-6 text-dark-400">
-                We sent a sign-in link to{" "}
-                <span className="text-white">{magicLinkEmail}</span>
-              </p>
-              <button
-                onClick={() => {
-                  setShowMagicLink(false);
-                  setMagicLinkSent(false);
-                }}
-                className="text-sm text-primary-400 transition-colors hover:text-primary-300"
-              >
-                Back to login
-              </button>
-            </div>
-          </div>
-        </div>
+        <AuthLayout>
+          <AuthHeader
+            logoUrl={logoUrl}
+            appName={branding.appName}
+            heading="Check your email"
+            subtext={`We sent a sign-in link to ${magicLinkEmail}`}
+            fallbackIcon={EnvelopeIconSolid}
+          />
+          <Card className="mt-5 rounded-lg p-5 text-center lg:p-7">
+            <button
+              onClick={() => {
+                setShowMagicLink(false);
+                setMagicLinkSent(false);
+              }}
+              className="text-sm text-primary-600 transition-colors hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-600"
+            >
+              Back to login
+            </button>
+          </Card>
+        </AuthLayout>
       );
     }
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-dark-900 px-4">
-        <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500">
-              <EnvelopeIconSolid className="size-7 text-white" />
+      <AuthLayout>
+        <AuthHeader
+          logoUrl={logoUrl}
+          appName={branding.appName}
+          heading="Sign in with email"
+          subtext="We'll send you a sign-in link"
+          fallbackIcon={EnvelopeIconSolid}
+        />
+        <Card className="mt-5 rounded-lg p-5 lg:p-7">
+          {error && (
+            <div className="mb-4 rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
+              {error}
             </div>
-            <h1 className="text-xl font-semibold text-white">Sign in with email</h1>
-            <p className="mt-2 text-dark-400">We'll send you a sign-in link</p>
-          </div>
-
-          <form
-            onSubmit={handleMagicLink}
-            className="space-y-4 rounded-2xl border border-dark-800 bg-dark-900/50 p-6 backdrop-blur-sm"
-          >
-            {error && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark-300">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                autoFocus
-                value={magicLinkEmail}
-                onChange={(e) => setMagicLinkEmail(e.target.value)}
-                className="w-full rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-white placeholder-dark-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="you@example.com"
-              />
-            </div>
-
+          )}
+          <form onSubmit={handleMagicLink} className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@example.com"
+              required
+              autoFocus
+              value={magicLinkEmail}
+              onChange={(e) => setMagicLinkEmail(e.target.value)}
+              prefix={
+                <EnvelopeIcon
+                  className="size-5 transition-colors duration-200"
+                  strokeWidth={1}
+                />
+              }
+            />
             <Button
               type="submit"
               color="primary"
-              variant="filled"
               className="w-full"
               disabled={loading}
             >
               {loading ? "Sending..." : "Send sign-in link"}
             </Button>
-
             <button
               type="button"
               onClick={() => setShowMagicLink(false)}
-              className="w-full text-sm text-dark-400 transition-colors hover:text-dark-300"
+              className="w-full text-sm text-gray-400 transition-colors hover:text-gray-600 dark:text-dark-300 dark:hover:text-dark-100"
             >
               Back to login
             </button>
           </form>
-        </div>
-      </div>
+        </Card>
+      </AuthLayout>
     );
   }
 
   // Main login form
   return (
-    <div className="flex min-h-screen items-center justify-center bg-dark-900 px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={branding.appName}
-              className="mx-auto mb-4 h-14 object-contain"
+    <AuthLayout>
+      <AuthHeader
+        logoUrl={logoUrl}
+        appName={branding.appName}
+        heading={heading}
+        subtext={subtext}
+        fallbackIcon={ArrowRightOnRectangleIconSolid}
+      />
+      <Card className="mt-5 rounded-lg p-5 lg:p-7">
+        {error && (
+          <div className="mb-4 rounded-lg border border-error/20 bg-error/5 p-3 text-sm text-error">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              type="email"
+              required
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              prefix={
+                <EnvelopeIcon
+                  className="size-5 transition-colors duration-200"
+                  strokeWidth={1}
+                />
+              }
             />
-          ) : (
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500">
-              <ArrowRightOnRectangleIconSolid className="size-7 text-white" />
-            </div>
-          )}
-          <h1 className="text-xl font-semibold text-white">{heading}</h1>
-          <p className="mt-2 text-dark-400">{subtext}</p>
-        </div>
-
-        <Card className="space-y-4 rounded-2xl border-dark-800 bg-dark-900/50 p-6 backdrop-blur-sm">
-          {error && (
-            <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
-          {/* OAuth buttons */}
-          {hasOAuth && (
-            <>
-              <div className="space-y-2">
-                {providers?.google && (
-                  <a
-                    href="/api/auth/google"
-                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 font-medium text-white transition-all hover:bg-dark-700"
-                  >
-                    <GoogleIcon className="size-5" />
-                    Continue with Google
-                  </a>
-                )}
-                {providers?.github && (
-                  <a
-                    href="/api/auth/github"
-                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 font-medium text-white transition-all hover:bg-dark-700"
-                  >
-                    <GithubIcon className="size-5" />
-                    Continue with GitHub
-                  </a>
-                )}
-                {providers?.microsoft && (
-                  <a
-                    href="/api/auth/microsoft"
-                    className="flex w-full items-center justify-center gap-3 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 font-medium text-white transition-all hover:bg-dark-700"
-                  >
-                    <MicrosoftIcon className="size-4" />
-                    Continue with Microsoft
-                  </a>
-                )}
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-dark-700" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-dark-900/50 px-3 text-dark-500">or</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Passkey button */}
-          {providers?.passkeys && (
-            <button
-              type="button"
-              onClick={handlePasskeyLogin}
-              disabled={loading}
-              className="flex w-full items-center justify-center gap-3 rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 font-medium text-white transition-all hover:bg-dark-700 disabled:opacity-50"
-            >
-              <FingerPrintIcon className="size-5" />
-              Sign in with passkey
-            </button>
-          )}
-
-          {/* Password form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark-300">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) =>
-                  setForm({ ...form, email: e.target.value })
-                }
-                className="w-full rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-white placeholder-dark-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-dark-300">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
-                className="w-full rounded-lg border border-dark-700 bg-dark-800 px-4 py-2.5 text-white placeholder-dark-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="Your password"
-              />
-            </div>
-
-            <div className="flex items-center justify-end">
+            <Input
+              label="Password"
+              placeholder="Your password"
+              type="password"
+              required
+              value={form.password}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
+              prefix={
+                <LockClosedIcon
+                  className="size-5 transition-colors duration-200"
+                  strokeWidth={1}
+                />
+              }
+            />
+            <div className="flex items-center justify-end space-x-2">
               <Link
                 to="/forgot-password"
-                className="text-sm text-primary-400 transition-colors hover:text-primary-300"
+                className="text-xs text-gray-400 transition-colors hover:text-gray-800 focus:text-gray-800 dark:text-dark-300 dark:hover:text-dark-100 dark:focus:text-dark-100"
               >
-                Forgot password?
+                Forgot Password?
               </Link>
             </div>
-
-            <Button
-              type="submit"
-              color="primary"
-              variant="filled"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-
-          {/* Magic link option */}
-          {providers?.magicLink && (
-            <button
-              type="button"
-              onClick={() => setShowMagicLink(true)}
-              className="flex w-full items-center justify-center gap-2 text-sm text-dark-400 transition-colors hover:text-dark-300"
-            >
-              <EnvelopeIcon className="size-4" />
-              Sign in with email link
-            </button>
-          )}
-
-          <div className="text-center text-sm text-dark-400">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-primary-400 transition-colors hover:text-primary-300"
-            >
-              Sign up
-            </Link>
           </div>
-        </Card>
-      </div>
-    </div>
+
+          <Button
+            type="submit"
+            color="primary"
+            className="mt-5 w-full"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </Button>
+        </form>
+
+        <div className="mt-4 text-center text-xs-plus">
+          <p className="line-clamp-1">
+            <span>Don't have an account?</span>{" "}
+            <Link
+              className="text-primary-600 transition-colors hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-600"
+              to="/signup"
+            >
+              Create account
+            </Link>
+          </p>
+        </div>
+
+        {hasAltMethods && <Divider label="OR" />}
+
+        {hasAltMethods && (
+          <div className="space-y-2">
+            {providers?.passkeys && (
+              <Button
+                variant="outlined"
+                className="h-10 w-full gap-3"
+                onClick={handlePasskeyLogin}
+                disabled={loading}
+              >
+                <FingerPrintIcon className="size-5" />
+                Sign in with passkey
+              </Button>
+            )}
+            {providers?.magicLink && (
+              <Button
+                variant="outlined"
+                className="h-10 w-full gap-3"
+                onClick={() => setShowMagicLink(true)}
+              >
+                <EnvelopeIcon className="size-5" />
+                Sign in with email link
+              </Button>
+            )}
+            {providers?.google && (
+              <Button
+                component="a"
+                href="/api/auth/google"
+                variant="outlined"
+                className="h-10 w-full gap-3"
+              >
+                <GoogleIcon className="size-5" />
+                Continue with Google
+              </Button>
+            )}
+            {providers?.github && (
+              <Button
+                component="a"
+                href="/api/auth/github"
+                variant="outlined"
+                className="h-10 w-full gap-3"
+              >
+                <GithubIcon className="size-5" />
+                Continue with GitHub
+              </Button>
+            )}
+            {providers?.microsoft && (
+              <Button
+                component="a"
+                href="/api/auth/microsoft"
+                variant="outlined"
+                className="h-10 w-full gap-3"
+              >
+                <MicrosoftIcon className="size-4" />
+                Continue with Microsoft
+              </Button>
+            )}
+          </div>
+        )}
+      </Card>
+    </AuthLayout>
   );
 }
