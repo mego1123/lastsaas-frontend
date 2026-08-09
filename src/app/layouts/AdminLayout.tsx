@@ -272,7 +272,7 @@ export default function AdminLayout() {
           <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-4">
             {navGroups.map((group) => (
               <div key={group.title} className="pt-3">
-                <div className="px-6 pb-1">
+                <div className="px-3 pb-1">
                   <span className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-dark-300">
                     {group.title}
                   </span>
@@ -338,7 +338,7 @@ function AdminNavItem({
         className={clsx(
           "group min-w-0 flex-1 rounded-md px-3 py-2 font-medium outline-hidden transition-colors ease-in-out",
           isActive
-            ? "text-primary-600 dark:text-primary-400"
+            ? "bg-primary-500/10 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400"
             : "text-gray-800 hover:bg-gray-100 hover:text-gray-950 focus:bg-gray-100 focus:text-gray-950 dark:text-dark-200 dark:hover:bg-dark-300/10 dark:hover:text-dark-50 dark:focus:bg-dark-300/10",
         )}
       >
@@ -362,9 +362,6 @@ function AdminNavItem({
             </Badge>
           )}
         </div>
-        {isActive && (
-          <div className="absolute bottom-1 top-1 w-1 bg-primary-600 dark:bg-primary-400 ltr:left-0 ltr:rounded-r-full rtl:right-0 rtl:rounded-l-lg" />
-        )}
       </NavLink>
     </div>
   );

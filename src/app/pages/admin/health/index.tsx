@@ -1,10 +1,10 @@
 // Import Dependencies
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { HeartIcon } from "@heroicons/react/24/outline";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
+import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { adminApi } from "@/utils/api";
 import type {
@@ -14,7 +14,7 @@ import type {
   NodeFilterMode,
   IntegrationCheck,
 } from "@/@types/lastsaas";
-import NodeCards from "./NodeCards";
+import NodeTable from "./NodeTable";
 import IntegrationsPanel from "./IntegrationsPanel";
 import CurrentStatusPanel from "./CurrentStatusPanel";
 import TimeRangeSelector from "./TimeRangeSelector";
@@ -85,27 +85,24 @@ export default function HealthPage() {
   return (
     <Page title="System Health">
       <div className="px-(--margin-x) pt-6 pb-8">
-        {/* Header */}
-        <div className="pb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-success/15">
-              <HeartIcon className="size-5 text-success dark:text-success-light" />
-            </div>
-            <div>
-              <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
-                System Health
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-dark-300">
-                Real-time server monitoring and metrics
-              </p>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
-          <NodeCards nodes={nodes} />
+          {/* 1. Current status stat tiles (CPU/Memory/Disk/Requests/Latency/Error) */}
           <CurrentStatusPanel metrics={currentMetrics} />
+
+          {/* 2. Nodes table */}
+          <Card className="overflow-hidden p-4 sm:p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <h2 className="text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-dark-300">
+                Nodes
+              </h2>
+            </div>
+            <NodeTable nodes={nodes} />
+          </Card>
+
+          {/* 3. Integrations */}
           <IntegrationsPanel integrations={integrations} />
+
+          {/* 4. Time range + filter controls */}
           <TimeRangeSelector
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}
@@ -115,6 +112,8 @@ export default function HealthPage() {
             onSelectedNodeChange={setSelectedNode}
             nodes={nodes}
           />
+
+          {/* 5. Historical metrics charts */}
           <MetricsCharts metrics={historicalMetrics} filterMode={filterMode} />
         </div>
       </div>
