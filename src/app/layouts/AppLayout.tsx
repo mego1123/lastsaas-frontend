@@ -15,13 +15,15 @@ import {
   MegaphoneIcon,
   ShieldCheckIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 
 // Local Imports
 import Logo from "@/assets/appLogo.svg?react";
 import LogoType from "@/assets/logotype.svg?react";
-import { Avatar, Badge } from "@/components/ui";
+import { Avatar, Badge, Button } from "@/components/ui";
+import { Search } from "@/components/template/Search";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useTenantContext } from "@/app/contexts/tenant/context";
@@ -190,8 +192,23 @@ export default function AppLayout() {
           <Logo className="size-8 text-primary-600 dark:text-primary-400" />
         </Link>
 
-        {/* Tenant switcher */}
-        {memberships.length > 1 && (
+          {/* Search bar — Tailux Sideblock Header pattern */}
+          <div className="hidden flex-1 sm:block">
+            <Search
+              renderButton={(open: () => void) => (
+                <button
+                  onClick={open}
+                  className="flex h-9 w-full max-w-xs items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm text-gray-500 transition-colors hover:border-gray-400 dark:border-dark-500 dark:text-dark-300 dark:hover:border-dark-400"
+                >
+                  <MagnifyingGlassIcon className="size-5" />
+                  <span>Search here...</span>
+                </button>
+              )}
+            />
+          </div>
+
+          {/* Tenant switcher */}
+          {memberships.length > 1 && (
           <div ref={tenantRef} className="relative">
             <button
               onClick={() => setShowTenantMenu((v) => !v)}
@@ -227,6 +244,23 @@ export default function AppLayout() {
         )}
 
         <div className="ml-auto flex items-center gap-1">
+          {/* Search bar — mobile icon button */}
+          <div className="sm:hidden">
+            <Search
+              renderButton={(open: () => void) => (
+                <Button
+                  onClick={open}
+                  variant="flat"
+                  isIcon
+                  className="size-9 rounded-full"
+                  aria-label="Search"
+                >
+                  <MagnifyingGlassIcon className="size-5" />
+                </Button>
+              )}
+            />
+          </div>
+
           {/* Messages bell */}
           <Link
             to="/messages"
@@ -359,7 +393,7 @@ export default function AppLayout() {
           <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-4">
             {navGroups.map((group) => (
               <div key={group.title} className="pt-3">
-                <div className="px-6 pb-1">
+                <div className="px-3 pb-1">
                   <span className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-dark-300">
                     {group.title}
                   </span>
@@ -422,7 +456,7 @@ function AppNavItem({
         className={clsx(
           "group min-w-0 flex-1 rounded-md px-3 py-2 font-medium outline-hidden transition-colors ease-in-out",
           isActive
-            ? "text-primary-600 dark:text-primary-400"
+            ? "bg-primary-500/10 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400"
             : "text-gray-800 hover:bg-gray-100 hover:text-gray-950 focus:bg-gray-100 focus:text-gray-950 dark:text-dark-200 dark:hover:bg-dark-300/10 dark:hover:text-dark-50 dark:focus:bg-dark-300/10",
         )}
       >
@@ -446,9 +480,6 @@ function AppNavItem({
             </Badge>
           )}
         </div>
-        {isActive && (
-          <div className="absolute bottom-1 top-1 w-1 bg-primary-600 dark:bg-primary-400 ltr:left-0 ltr:rounded-r-full rtl:right-0 rtl:rounded-l-lg" />
-        )}
       </NavLink>
     </div>
   );

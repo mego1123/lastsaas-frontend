@@ -9,7 +9,6 @@ import {
 } from "react-router";
 import {
   ArrowLeftIcon,
-  ShieldCheckIcon,
   Squares2X2Icon,
   UsersIcon,
   BuildingOffice2Icon,
@@ -27,13 +26,15 @@ import {
   InformationCircleIcon,
   EnvelopeIcon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 
 // Local Imports
 import Logo from "@/assets/appLogo.svg?react";
 import LogoType from "@/assets/logotype.svg?react";
-import { Badge } from "@/components/ui";
+import { Badge, Button } from "@/components/ui";
+import { Search } from "@/components/template/Search";
 import { SidebarToggleBtn } from "@/components/shared/SidebarToggleBtn";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useSidebarContext } from "@/app/contexts/sidebar/context";
@@ -192,31 +193,49 @@ export default function AdminLayout() {
           <SidebarToggleBtn />
         </div>
 
-        {/* Back to App */}
-        <Link
-          to="/dashboard"
-          className="flex items-center gap-2 text-gray-700 transition-colors hover:text-gray-950 dark:text-dark-200 dark:hover:text-dark-50"
-        >
-          <ArrowLeftIcon className="size-5 stroke-[1.5]" />
-          <span className="hidden text-sm font-medium sm:inline">
-            Back to App
-          </span>
-        </Link>
-
-        <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-dark-600" />
-
-        {/* Admin badge */}
-        <div className="flex items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary-600 text-white">
-            <ShieldCheckIcon className="size-5 stroke-[1.5]" />
-          </span>
-          <span className="font-semibold text-gray-900 dark:text-white">
-            Admin
-          </span>
+        {/* Search bar — Tailux Sideblock Header pattern */}
+        <div className="hidden flex-1 sm:block">
+          <Search
+            renderButton={(open: () => void) => (
+              <button
+                onClick={open}
+                className="flex h-9 w-full max-w-xs items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm text-gray-500 transition-colors hover:border-gray-400 dark:border-dark-500 dark:text-dark-300 dark:hover:border-dark-400"
+              >
+                <MagnifyingGlassIcon className="size-5" />
+                <span>Search here...</span>
+              </button>
+            )}
+          />
         </div>
 
         <div className="ml-auto flex items-center gap-1">
-          {/* Optional unread admin messages shortcut */}
+          {/* Search bar — mobile icon button */}
+          <div className="sm:hidden">
+            <Search
+              renderButton={(open: () => void) => (
+                <Button
+                  onClick={open}
+                  variant="flat"
+                  isIcon
+                  className="size-9 rounded-full"
+                  aria-label="Search"
+                >
+                  <MagnifyingGlassIcon className="size-5" />
+                </Button>
+              )}
+            />
+          </div>
+
+          {/* Back to App */}
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-dark-200 dark:hover:bg-dark-300/10"
+          >
+            <ArrowLeftIcon className="size-5 stroke-[1.5]" />
+            <span className="hidden sm:inline">Back to App</span>
+          </Link>
+
+          {/* Admin messages */}
           <Link
             to="/last/messages"
             className="relative flex size-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-300/10"
