@@ -373,7 +373,7 @@ export default function ActivityPage() {
           ) : (
             <>
               <div className="max-w-2xl">
-                <Timeline pointSize="1.5rem">
+                <Timeline pointSize="1.5rem" lineSpace="0.75rem">
                   {styledLogs.map(({ log, style }) => {
                     const { Icon, color, title } = style;
                     return (

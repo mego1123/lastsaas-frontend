@@ -240,7 +240,7 @@ export default function TeamPage() {
         )}
 
         {/* Members Table — responsive: scrolls horizontally on mobile */}
-        <Card className="mt-3">
+        <Card>
           <div className="min-w-full overflow-x-auto">
             <Table hoverable className="w-full min-w-[640px]">
               <THead>

@@ -11,6 +11,7 @@ import { Link } from "react-router";
 // Local Imports
 import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { useBranding } from "@/app/contexts/branding/context";
@@ -37,14 +38,19 @@ export default function DashboardPage() {
           />
         )}
 
-        <div className="pb-5">
+        <div className="flex flex-col gap-2 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
             Welcome back, {user?.displayName?.split(" ")[0]}
           </h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-            {currentTenant?.tenantName} &middot;{" "}
-            <span className="capitalize">{currentTenant?.role}</span>
-          </p>
+          {currentTenant && (
+            <Badge
+              variant="soft"
+              color="neutral"
+              className="w-fit capitalize"
+            >
+              {currentTenant.tenantName} &middot; {currentTenant.role}
+            </Badge>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">

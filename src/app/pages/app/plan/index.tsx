@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Check,
   Minus,
-  Crown,
   Sparkles,
   Zap,
   XCircle,
@@ -22,6 +21,8 @@ import {
 import { Page } from "@/components/shared/Page";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Circlebar } from "@/components/ui/Circlebar";
 import { Spinner } from "@/components/ui/Spinner";
 import {
   Table,
@@ -226,6 +227,23 @@ export default function PlanPage() {
     billingStatus === "active" || billingStatus === "canceled";
   const isCanceled = billingStatus === "canceled";
 
+  // Approximate cycle-progress for the renewal Circlebar — derived from the
+  // real currentPeriodEnd date, not fabricated. 30/365 day cycle assumption
+  // since we don't have an explicit cycle-start date.
+  const cycleDays = billingInterval === "year" ? 365 : 30;
+  const daysRemaining = currentPeriodEnd
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(currentPeriodEnd).getTime() - Date.now()) / 86_400_000,
+        ),
+      )
+    : 0;
+  const renewalPercentRemaining = Math.min(
+    100,
+    Math.round((daysRemaining / cycleDays) * 100),
+  );
+
   return (
     <Page title="Your Plan">
       <div className="px-(--margin-x) pt-6 pb-8">
@@ -271,57 +289,61 @@ export default function PlanPage() {
           </div>
         )}
 
-        {/* Current Plan Banner */}
+        {/* Current Plan Banner — Tailux settings/billing MemberPlan pattern */}
         {currentPlan && (
-          <div className="mb-8 rounded-2xl border border-primary-500/20 bg-gradient-to-r from-primary-500/10 via-secondary-500/10 to-primary-500/10 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="mb-1 flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-primary-500 dark:text-primary-400" />
-                  <span className="text-sm font-medium text-primary-500 dark:text-primary-400">
-                    Current Plan
-                  </span>
+          <div className="mb-8 rounded-lg bg-gray-100 p-4 dark:bg-dark-800">
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
+              <div className="min-w-0">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <p className="text-lg font-medium text-gray-800 dark:text-dark-100">
+                    {currentPlan.name}
+                  </p>
                   {billingWaived && (
-                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
+                    <Badge color="success" variant="soft">
                       Billing Waived
-                    </span>
+                    </Badge>
                   )}
                   {billingStatus === "active" && (
-                    <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success">
+                    <Badge color="success" variant="soft">
                       Active
-                    </span>
+                    </Badge>
                   )}
                   {billingStatus === "past_due" && (
-                    <span className="rounded-full bg-error/10 px-2 py-0.5 text-xs font-medium text-error">
+                    <Badge color="error" variant="soft">
                       Past Due
-                    </span>
+                    </Badge>
                   )}
                   {isCanceled && (
-                    <span className="rounded-full bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
+                    <Badge color="warning" variant="soft">
                       Canceled
-                    </span>
+                    </Badge>
                   )}
                 </div>
-                <h2 className="text-xl font-medium tracking-wide text-gray-800 dark:text-dark-50">
-                  {currentPlan.name}
-                </h2>
+
                 {currentPlan.description && (
-                  <p className="mt-1 text-gray-700 dark:text-dark-200">
+                  <p className="text-sm text-gray-600 dark:text-dark-200">
                     {currentPlan.description}
                   </p>
                 )}
-                {billingInterval && (
-                  <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-                    Billed {billingInterval}ly
-                  </p>
-                )}
+
                 {currentPeriodEnd && isActiveSubscription && (
-                  <p className="mt-1 text-sm text-gray-500 dark:text-dark-300">
-                    {isCanceled
-                      ? `Benefits until ${new Date(currentPeriodEnd).toLocaleDateString()}`
-                      : `Next billing: ${new Date(currentPeriodEnd).toLocaleDateString()}`}
-                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Circlebar
+                      size={5}
+                      strokeWidth={12}
+                      variant="soft"
+                      value={renewalPercentRemaining}
+                      color={isCanceled ? "warning" : "primary"}
+                      className="flex"
+                    />
+                    <p className="text-sm text-gray-600 dark:text-dark-200">
+                      {isCanceled
+                        ? `Benefits until ${new Date(currentPeriodEnd).toLocaleDateString()}`
+                        : `Renews ${new Date(currentPeriodEnd).toLocaleDateString()}`}
+                    </p>
+                  </div>
                 )}
+
                 {(hasCredits || hasBonusCredits) && (
                   <div className="mt-3 space-y-1">
                     <div className="flex items-center gap-2">
@@ -333,7 +355,7 @@ export default function PlanPage() {
                         credits total
                       </span>
                     </div>
-                    <div className="ml-6 flex items-center gap-4 text-xs text-gray-500 dark:text-dark-300">
+                    <div className="ml-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-dark-300">
                       <span>
                         {subscriptionCredits.toLocaleString()} from monthly plan
                       </span>
@@ -345,32 +367,32 @@ export default function PlanPage() {
                   </div>
                 )}
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900 dark:text-dark-50">
-                  {formatPrice(currentPlan.monthlyPriceCents, currency)}
+
+              <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+                <div className="text-right">
+                  <div className="text-2xl font-semibold text-gray-900 dark:text-dark-50">
+                    {formatPrice(currentPlan.monthlyPriceCents, currency)}
+                  </div>
+                  {currentPlan.monthlyPriceCents > 0 && (
+                    <span className="text-xs text-gray-500 dark:text-dark-300">
+                      /{billingInterval || "month"}
+                    </span>
+                  )}
                 </div>
-                {currentPlan.monthlyPriceCents > 0 && (
-                  <span className="text-sm text-gray-500 dark:text-dark-300">
-                    /month
-                  </span>
-                )}
+                {billingStatus === "active" &&
+                  currentPlan.monthlyPriceCents > 0 &&
+                  !billingWaived && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      className="h-8 text-xs"
+                      onClick={() => setShowCancelModal(true)}
+                    >
+                      Cancel Subscription
+                    </Button>
+                  )}
               </div>
             </div>
-
-            {/* Cancel button */}
-            {billingStatus === "active" &&
-              currentPlan.monthlyPriceCents > 0 &&
-              !billingWaived && (
-                <div className="mt-4 border-t border-primary-500/10 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCancelModal(true)}
-                    className="text-sm text-gray-500 transition-colors hover:text-error dark:text-dark-300"
-                  >
-                    Cancel Subscription
-                  </button>
-                </div>
-              )}
           </div>
         )}
 
