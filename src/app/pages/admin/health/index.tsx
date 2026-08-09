@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 
 // Local Imports
 import { Page } from "@/components/shared/Page";
-import { Card } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { adminApi } from "@/utils/api";
 import type {
@@ -90,14 +89,12 @@ export default function HealthPage() {
           <CurrentStatusPanel metrics={currentMetrics} />
 
           {/* 2. Nodes table */}
-          <Card className="overflow-hidden p-4 sm:p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <h2 className="text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-dark-300">
-                Nodes
-              </h2>
-            </div>
+          <div>
+            <h2 className="mb-3 text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-dark-300">
+              Nodes
+            </h2>
             <NodeTable nodes={nodes} />
-          </Card>
+          </div>
 
           {/* 3. Integrations */}
           <IntegrationsPanel integrations={integrations} />

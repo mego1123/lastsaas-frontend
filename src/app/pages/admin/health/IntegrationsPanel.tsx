@@ -20,7 +20,6 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import clsx from "clsx";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Form/Input";
@@ -408,7 +407,7 @@ export default function IntegrationsPanel({
           Integrations
         </h2>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="divide-y divide-gray-200 dark:divide-dark-500">
         {integrations.map((check) => {
           const Icon = ICONS[check.name] || AdjustmentsHorizontalIcon;
           const label = LABELS[check.name] || check.name;
@@ -419,106 +418,81 @@ export default function IntegrationsPanel({
           const callsLabel = CALLS_24H_LABEL[check.name];
           const canTestEmail = check.name === "resend" && isHealthy;
 
+          // Description line: show status message or last-check metadata
+          let description: string;
+          if (isNotConfigured) {
+            description = "Not configured yet — setup required to enable.";
+          } else if (isUnhealthy) {
+            description = check.message || "Unhealthy — check connection.";
+          } else {
+            const parts: string[] = [];
+            if (check.message) parts.push(check.message);
+            if (check.lastCheck) {
+              parts.push(`Last check ${timeAgo(check.lastCheck)}`);
+              parts.push(`${check.responseMs}ms`);
+            }
+            if (callsLabel && check.calls24h != null) {
+              parts.push(`${callsLabel} (24h): ${check.calls24h.toLocaleString()}`);
+            }
+            description = parts.join(" · ");
+          }
+
+          const statusColor = isHealthy
+            ? "success"
+            : isUnhealthy
+              ? "error"
+              : "warning";
+          const statusLabel = isNotConfigured
+            ? "Not Configured"
+            : isHealthy
+              ? "Healthy"
+              : "Unhealthy";
+          const iconColor = isHealthy
+            ? "text-success dark:text-success-light"
+            : isUnhealthy
+              ? "text-error"
+              : "text-warning";
+
           return (
             <div
               key={check.name}
-              className={clsx(
-                "flex flex-col rounded-lg p-3",
-                isNotConfigured
-                  ? "border border-gray-200 dark:border-dark-500"
-                  : isUnhealthy
-                    ? "border border-error/30 bg-gray-100 dark:border-error-lighter/30 dark:bg-dark-700"
-                    : "bg-gray-100 dark:bg-dark-700",
-              )}
+              className="flex items-start gap-4 py-4"
             >
-              <div className="flex items-center gap-2">
-                <div
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${
-                    isHealthy
-                      ? "bg-success/15"
-                      : isUnhealthy
-                        ? "bg-error/15"
-                        : "bg-warning/10"
-                  }`}
-                >
-                  <Icon
-                    className={`size-4 ${
-                      isHealthy
-                        ? "text-success dark:text-success-light"
-                        : isUnhealthy
-                          ? "text-error"
-                          : "text-warning"
-                    }`}
-                  />
-                </div>
-                <p className="truncate text-base font-medium text-gray-800 dark:text-dark-100">
-                  {label}
-                </p>
-                <Badge
-                  variant="soft"
-                  color={
-                    isHealthy ? "success" : isUnhealthy ? "error" : "warning"
-                  }
-                  className="ml-auto shrink-0 text-xs"
-                >
-                  {isNotConfigured
-                    ? "Not Configured"
-                    : isHealthy
-                      ? "Healthy"
-                      : "Unhealthy"}
-                </Badge>
+              {/* Icon */}
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-dark-700">
+                <Icon className={`size-5 ${iconColor}`} />
               </div>
 
-              {!isNotConfigured && (
-                <p
-                  className={`mt-2 grow text-xs ${
-                    isUnhealthy
-                      ? "text-error"
-                      : "text-gray-500 dark:text-dark-300"
-                  }`}
-                >
-                  {check.message}
-                </p>
-              )}
-
-              {!isNotConfigured && check.lastCheck && (
-                <div className="mt-3 space-y-1 text-xs text-gray-500 dark:text-dark-300">
-                  <div className="flex justify-between">
-                    <span>Last check</span>
-                    <span className="text-gray-700 dark:text-dark-200">
-                      {timeAgo(check.lastCheck)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Response</span>
-                    <span className="text-gray-700 dark:text-dark-200">
-                      {check.responseMs}ms
-                    </span>
-                  </div>
-                  {callsLabel && (
-                    <div className="flex justify-between">
-                      <span>{callsLabel} (24h)</span>
-                      <span className="text-gray-700 dark:text-dark-200">
-                        {check.calls24h.toLocaleString()}
-                      </span>
-                    </div>
-                  )}
+              {/* Name + badge + description */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    data-tooltip
+                    data-tooltip-content={check.message || label}
+                    className="font-medium text-gray-800 dark:text-dark-100"
+                  >
+                    {label}
+                  </span>
+                  <Badge
+                    variant="soft"
+                    color={statusColor as "success" | "error" | "warning"}
+                    className="shrink-0 text-xs"
+                  >
+                    {statusLabel}
+                  </Badge>
                 </div>
-              )}
+                <p className="mt-0.5 text-sm text-gray-500 dark:text-dark-300">
+                  {description}
+                </p>
+              </div>
 
-              <div className="mt-6 flex items-end justify-between gap-2">
-                <Button
-                  data-tooltip
-                  data-tooltip-content={check.message || label}
-                  isIcon
-                  className="size-7 rounded-full"
-                >
-                  <QuestionMarkCircleIcon className="size-3.5" />
-                </Button>
+              {/* Action buttons */}
+              <div className="flex shrink-0 items-center gap-2">
                 {hasHelp && (
                   <Button
                     color="warning"
-                    className="text-xs-plus h-8 gap-2 rounded-md uppercase"
+                    variant="outlined"
+                    className="h-8 gap-2 text-xs-plus rounded-md uppercase"
                     onClick={() => setHelpFor(check.name)}
                   >
                     Setup Help
@@ -527,13 +501,24 @@ export default function IntegrationsPanel({
                 {canTestEmail && (
                   <Button
                     color="success"
-                    className="text-xs-plus h-8 gap-2 rounded-md uppercase"
+                    variant="outlined"
+                    className="h-8 gap-2 text-xs-plus rounded-md uppercase"
                     onClick={() => setShowTestEmail(true)}
                   >
                     <PaperAirplaneIcon className="size-3.5" />
                     Send Test Email
                   </Button>
                 )}
+                <Button
+                  data-tooltip
+                  data-tooltip-content={check.message || label}
+                  isIcon
+                  variant="flat"
+                  className="size-8 rounded-full"
+                  aria-label="More info"
+                >
+                  <QuestionMarkCircleIcon className="size-4" />
+                </Button>
               </div>
             </div>
           );

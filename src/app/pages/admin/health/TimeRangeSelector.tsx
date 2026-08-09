@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Form/Select";
 import type {
@@ -30,6 +31,41 @@ const filterModes: { value: NodeFilterMode; label: string }[] = [
   { value: "single", label: "Single Node" },
 ];
 
+// Pill-track toggle — matches ItemViewTypeSelect pattern from
+// tables/users-datatable (gray track + white floating pill for active)
+function PillToggle<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex rounded-md bg-gray-200 px-1 py-1 text-xs-plus text-gray-800 dark:bg-dark-700 dark:text-dark-200">
+      {options.map((opt) => {
+        const isActive = value === opt.value;
+        return (
+          <Button
+            key={opt.value}
+            unstyled
+            className={clsx(
+              "shrink-0 rounded-sm px-2.5 py-1 font-medium whitespace-nowrap",
+              isActive
+                ? "bg-white shadow-sm dark:bg-dark-500 dark:text-dark-100"
+                : "hover:text-gray-900 focus:text-gray-900 dark:hover:text-dark-100 dark:focus:text-dark-100",
+            )}
+            onClick={() => onChange(opt.value)}
+          >
+            {opt.label}
+          </Button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function TimeRangeSelector({
   timeRange,
   onTimeRangeChange,
@@ -41,33 +77,16 @@ export default function TimeRangeSelector({
 }: TimeRangeSelectorProps) {
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
-        {timeRanges.map((r) => (
-          <Button
-            key={r.value}
-            variant={timeRange === r.value ? "filled" : "flat"}
-            color={timeRange === r.value ? "primary" : "neutral"}
-            className="h-8 min-w-9 px-3 text-sm"
-            onClick={() => onTimeRangeChange(r.value)}
-          >
-            {r.label}
-          </Button>
-        ))}
-      </div>
-
-      <div className="flex overflow-hidden rounded-lg border border-gray-200 dark:border-dark-600">
-        {filterModes.map((m) => (
-          <Button
-            key={m.value}
-            variant={filterMode === m.value ? "filled" : "flat"}
-            color={filterMode === m.value ? "primary" : "neutral"}
-            className="h-8 min-w-9 px-3 text-sm"
-            onClick={() => onFilterModeChange(m.value)}
-          >
-            {m.label}
-          </Button>
-        ))}
-      </div>
+      <PillToggle
+        options={timeRanges}
+        value={timeRange}
+        onChange={onTimeRangeChange}
+      />
+      <PillToggle
+        options={filterModes}
+        value={filterMode}
+        onChange={onFilterModeChange}
+      />
 
       {filterMode === "single" && nodes.length > 0 && (
         <Select

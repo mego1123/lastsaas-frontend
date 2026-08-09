@@ -198,10 +198,29 @@ export default function AppLayout() {
               renderButton={(open: () => void) => (
                 <button
                   onClick={open}
-                  className="flex h-9 w-full max-w-xs items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm text-gray-500 transition-colors hover:border-gray-400 dark:border-dark-500 dark:text-dark-300 dark:hover:border-dark-400"
+                  className="flex items-center gap-4 outline-hidden max-sm:hidden"
                 >
-                  <MagnifyingGlassIcon className="size-5" />
-                  <span>Search here...</span>
+                  <div className="flex items-center gap-2">
+                    <MagnifyingGlassIcon className="size-5" />
+                    <span>Search here...</span>
+                  </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      d="M3.5.5h12c1.7 0 3 1.3 3 3v13c0 1.7-1.3 3-3 3h-12c-1.7 0-3-1.3-3-3v-13c0-1.7 1.3-3 3-3z"
+                      opacity="0.4"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M11.8 6L8 15.1h-.9L10.8 6h1z"
+                    />
+                  </svg>
                 </button>
               )}
             />

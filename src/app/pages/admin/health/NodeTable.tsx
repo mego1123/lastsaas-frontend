@@ -34,7 +34,7 @@ export default function NodeTable({ nodes }: NodeTableProps) {
   }
 
   return (
-    <div className="hide-scrollbar min-w-full overflow-x-auto rounded-lg border border-gray-200 dark:border-dark-500">
+    <div className="hide-scrollbar min-w-full overflow-x-auto">
       <Table className="w-full text-left rtl:text-right">
         <THead>
           <Tr className="border-y border-transparent border-b-gray-200 dark:border-b-dark-500">
