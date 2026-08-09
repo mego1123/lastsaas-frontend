@@ -1,4 +1,3 @@
-import { ServerIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { Box, Badge } from "@/components/ui";
 import type { SystemNode } from "@/@types/lastsaas";

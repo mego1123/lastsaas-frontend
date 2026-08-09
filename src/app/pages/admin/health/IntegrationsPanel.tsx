@@ -20,7 +20,8 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { Card } from "@/components/ui/Card";
+import clsx from "clsx";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Form/Input";
 import { adminApi } from "@/utils/api";
@@ -419,19 +420,20 @@ export default function IntegrationsPanel({
           const canTestEmail = check.name === "resend" && isHealthy;
 
           return (
-            <Card
+            <div
               key={check.name}
-              className={`p-5 ${
-                isUnhealthy
-                  ? "border-error/30 dark:border-error-lighter/30"
-                  : isNotConfigured
-                    ? "border-warning/20"
-                    : ""
-              }`}
+              className={clsx(
+                "flex flex-col rounded-lg p-3",
+                isNotConfigured
+                  ? "border border-gray-200 dark:border-dark-500"
+                  : isUnhealthy
+                    ? "border border-error/30 bg-gray-100 dark:border-error-lighter/30 dark:bg-dark-700"
+                    : "bg-gray-100 dark:bg-dark-700",
+              )}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-2">
                 <div
-                  className={`flex size-10 items-center justify-center rounded-xl ${
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${
                     isHealthy
                       ? "bg-success/15"
                       : isUnhealthy
@@ -440,7 +442,7 @@ export default function IntegrationsPanel({
                   }`}
                 >
                   <Icon
-                    className={`size-5 ${
+                    className={`size-4 ${
                       isHealthy
                         ? "text-success dark:text-success-light"
                         : isUnhealthy
@@ -449,49 +451,36 @@ export default function IntegrationsPanel({
                     }`}
                   />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 dark:text-dark-50">
-                      {label}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
-                        isHealthy
-                          ? "bg-success/15 text-success dark:text-success-light"
-                          : isUnhealthy
-                            ? "bg-error/15 text-error"
-                            : "bg-warning/10 text-warning"
-                      }`}
-                    >
-                      <span
-                        className={`size-1.5 rounded-full ${
-                          isHealthy
-                            ? "bg-success dark:bg-success-light"
-                            : isUnhealthy
-                              ? "bg-error"
-                              : "bg-warning"
-                        }`}
-                      />
-                      {isNotConfigured
-                        ? "Not Configured"
-                        : isHealthy
-                          ? "Healthy"
-                          : "Unhealthy"}
-                    </span>
-                  </div>
-                  {!isNotConfigured && (
-                    <p
-                      className={`mt-1 text-xs ${
-                        isUnhealthy
-                          ? "text-error"
-                          : "text-gray-400 dark:text-dark-400"
-                      }`}
-                    >
-                      {check.message}
-                    </p>
-                  )}
-                </div>
+                <p className="truncate text-base font-medium text-gray-800 dark:text-dark-100">
+                  {label}
+                </p>
+                <Badge
+                  variant="soft"
+                  color={
+                    isHealthy ? "success" : isUnhealthy ? "error" : "warning"
+                  }
+                  className="ml-auto shrink-0 text-xs"
+                >
+                  {isNotConfigured
+                    ? "Not Configured"
+                    : isHealthy
+                      ? "Healthy"
+                      : "Unhealthy"}
+                </Badge>
               </div>
+
+              {!isNotConfigured && (
+                <p
+                  className={`mt-2 grow text-xs ${
+                    isUnhealthy
+                      ? "text-error"
+                      : "text-gray-500 dark:text-dark-300"
+                  }`}
+                >
+                  {check.message}
+                </p>
+              )}
+
               {!isNotConfigured && check.lastCheck && (
                 <div className="mt-3 space-y-1 text-xs text-gray-500 dark:text-dark-300">
                   <div className="flex justify-between">
@@ -516,29 +505,37 @@ export default function IntegrationsPanel({
                   )}
                 </div>
               )}
-              {hasHelp && (
+
+              <div className="mt-6 flex items-end justify-between gap-2">
                 <Button
-                  variant="outlined"
-                  color="warning"
-                  className="mt-3 h-8 text-xs"
-                  onClick={() => setHelpFor(check.name)}
+                  data-tooltip
+                  data-tooltip-content={check.message || label}
+                  isIcon
+                  className="size-7 rounded-full"
                 >
                   <QuestionMarkCircleIcon className="size-3.5" />
-                  Setup Help
                 </Button>
-              )}
-              {canTestEmail && (
-                <Button
-                  variant="outlined"
-                  color="success"
-                  className="mt-3 h-8 text-xs"
-                  onClick={() => setShowTestEmail(true)}
-                >
-                  <PaperAirplaneIcon className="size-3.5" />
-                  Send Test Email
-                </Button>
-              )}
-            </Card>
+                {hasHelp && (
+                  <Button
+                    color="warning"
+                    className="text-xs-plus h-8 gap-2 rounded-md uppercase"
+                    onClick={() => setHelpFor(check.name)}
+                  >
+                    Setup Help
+                  </Button>
+                )}
+                {canTestEmail && (
+                  <Button
+                    color="success"
+                    className="text-xs-plus h-8 gap-2 rounded-md uppercase"
+                    onClick={() => setShowTestEmail(true)}
+                  >
+                    <PaperAirplaneIcon className="size-3.5" />
+                    Send Test Email
+                  </Button>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
