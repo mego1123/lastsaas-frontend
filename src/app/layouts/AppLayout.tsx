@@ -6,9 +6,15 @@ import {
   UsersIcon,
   Cog6ToothIcon,
   CreditCardIcon,
-  BanknotesIcon,
-  ChartBarIcon,
-  EnvelopeIcon,
+  BoltIcon,
+  DocumentTextIcon,
+  PhotoIcon,
+  GlobeAltIcon,
+  StarIcon,
+  HeartIcon,
+  BookOpenIcon,
+  ChatBubbleLeftRightIcon,
+  QuestionMarkCircleIcon,
   ArrowLeftStartOnRectangleIcon,
   ChevronDownIcon,
   BellIcon,
@@ -29,7 +35,8 @@ import { useAuthContext } from "@/app/contexts/auth/context";
 import { useTenantContext } from "@/app/contexts/tenant/context";
 import { useSidebarContext } from "@/app/contexts/sidebar/context";
 import { useBreakpointsContext } from "@/app/contexts/breakpoint/context";
-import { messagesApi, announcementsApi } from "@/utils/api";
+import { messagesApi, announcementsApi, plansApi, bundlesApi } from "@/utils/api";
+import { useBranding } from "@/app/contexts/branding/context";
 import { isRouteActive } from "@/utils/isRouteActive";
 
 // ----------------------------------------------------------------------
@@ -43,33 +50,39 @@ interface NavItem {
   exact?: boolean;
 }
 
-interface NavGroup {
-  title: string;
-  items: NavItem[];
-}
+// Icon map: maps backend lucide-style icon names to heroicons.
+// Used when branding.navItems is populated from backend config.
+const iconMap: Record<string, NavIcon> = {
+  LayoutDashboard: Squares2X2Icon,
+  Users: UsersIcon,
+  Settings: Cog6ToothIcon,
+  CreditCard: CreditCardIcon,
+  FileText: DocumentTextIcon,
+  Image: PhotoIcon,
+  Globe: GlobeAltIcon,
+  Shield: ShieldCheckIcon,
+  Zap: BoltIcon,
+  Star: StarIcon,
+  Heart: HeartIcon,
+  BookOpen: BookOpenIcon,
+  MessageCircle: ChatBubbleLeftRightIcon,
+  HelpCircle: QuestionMarkCircleIcon,
+};
 
-const navGroups: NavGroup[] = [
-  {
-    title: "General",
-    items: [
-      { path: "/dashboard", icon: Squares2X2Icon, label: "Dashboard" },
-      { path: "/team", icon: UsersIcon, label: "Team" },
-      { path: "/messages", icon: EnvelopeIcon, label: "Messages" },
-      { path: "/activity", icon: ChartBarIcon, label: "Activity" },
-    ],
-  },
-  {
-    title: "Billing",
-    items: [
-      { path: "/plan", icon: CreditCardIcon, label: "Plan" },
-      { path: "/buy-credits", icon: BanknotesIcon, label: "Buy Credits" },
-    ],
-  },
-  {
-    title: "Account",
-    items: [{ path: "/settings", icon: Cog6ToothIcon, label: "Settings" }],
-  },
-];
+// Fallback nav items when branding.navItems is empty.
+function buildDefaultNavItems(showTeam: boolean): NavItem[] {
+  const items: NavItem[] = [
+    { path: "/dashboard", icon: Squares2X2Icon, label: "Dashboard" },
+  ];
+  if (showTeam) {
+    items.push({ path: "/team", icon: UsersIcon, label: "Team" });
+  }
+  items.push(
+    { path: "/plan", icon: CreditCardIcon, label: "Plan" },
+    { path: "/settings", icon: Cog6ToothIcon, label: "Settings" },
+  );
+  return items;
+}
 
 // ----------------------------------------------------------------------
 
@@ -78,6 +91,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, memberships } = useAuthContext();
   const { currentTenant } = useTenantContext();
+  const { branding } = useBranding();
   const { isExpanded: isSidebarExpanded, close: closeSidebar } =
     useSidebarContext();
   const { lgAndDown } = useBreakpointsContext();
@@ -90,6 +104,10 @@ export default function AppLayout() {
     setLatestAnnouncement,
   ] = useState<{ id: string; title: string } | null>(null);
   const [dismissedAnnouncement, setDismissedAnnouncement] = useState("");
+  const [showCredits, setShowCredits] = useState(false);
+  const [tenantCredits, setTenantCredits] = useState(0);
+  const [hasBundles, setHasBundles] = useState(false);
+  const [showTeam, setShowTeam] = useState(true);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const tenantRef = useRef<HTMLDivElement>(null);
@@ -127,28 +145,66 @@ export default function AppLayout() {
     };
   }, []);
 
-  // Fetch unread message count and latest published announcement.
+  // Fetch unread messages, announcements, plans (for credits/team info),
+  // and bundles (for buy-credits routing).
   useEffect(() => {
     if (!isAuthenticated) return;
-    Promise.allSettled([messagesApi.unreadCount(), announcementsApi.list()])
-      .then(([messagesResult, announcementsResult]) => {
-        if (messagesResult.status === "fulfilled") {
-          setUnreadCount(messagesResult.value.count);
+    Promise.allSettled([
+      messagesApi.unreadCount(),
+      announcementsApi.list(),
+      plansApi.list(),
+      bundlesApi.list(),
+    ]).then(([messagesResult, announcementsResult, plansResult, bundlesResult]) => {
+      if (messagesResult.status === "fulfilled") {
+        setUnreadCount(messagesResult.value.count);
+      }
+      if (announcementsResult.status === "fulfilled") {
+        const anns = announcementsResult.value.announcements || [];
+        const published = anns.filter((a) => a.isPublished);
+        if (published.length > 0) {
+          const latest = published[0];
+          setLatestAnnouncement({ id: latest.id, title: latest.title });
+          setDismissedAnnouncement(
+            localStorage.getItem("dismissed_announcement") || "",
+          );
         }
-        if (announcementsResult.status === "fulfilled") {
-          const anns = announcementsResult.value.announcements || [];
-          const published = anns.filter((a) => a.isPublished);
-          if (published.length > 0) {
-            const latest = published[0];
-            setLatestAnnouncement({ id: latest.id, title: latest.title });
-            setDismissedAnnouncement(
-              localStorage.getItem("dismissed_announcement") || "",
-            );
-          }
-        }
-      })
-      .catch(() => {});
+      }
+      if (plansResult.status === "fulfilled") {
+        const data = plansResult.value;
+        const hasCredits = data.plans.some(
+          (p) => p.usageCreditsPerMonth > 0 || p.bonusCredits > 0,
+        );
+        setShowCredits(hasCredits);
+        setTenantCredits(data.tenantSubscriptionCredits + data.tenantPurchasedCredits);
+        setShowTeam(data.maxPlanUserLimit !== 1);
+      }
+      if (bundlesResult.status === "fulfilled") {
+        setHasBundles(bundlesResult.value.bundles.length > 0);
+      }
+    }).catch(() => {});
   }, [isAuthenticated]);
+
+  // Build nav items from branding config or fallback to defaults.
+  // Matches original lastsaas logic: branding.navItems takes priority,
+  // filtered by visible + showTeam, sorted by sortOrder.
+  const navItems: NavItem[] = (() => {
+    const brandingNav = branding.navItems;
+    if (brandingNav && brandingNav.length > 0) {
+      return brandingNav
+        .filter((item) => item.visible)
+        .filter((item) => {
+          if (item.id === "team" && !showTeam) return false;
+          return true;
+        })
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((item) => ({
+          path: item.target,
+          icon: iconMap[item.icon] || DocumentTextIcon,
+          label: item.label,
+        }));
+    }
+    return buildDefaultNavItems(showTeam);
+  })();
 
   // Click-outside handler for the user and tenant dropdown menus.
   useEffect(() => {
@@ -280,6 +336,19 @@ export default function AppLayout() {
             />
           </div>
 
+          {/* Credits indicator — conditional, matches original lastsaas pattern.
+              Navigates to /buy-credits if bundles exist, else /plan. */}
+          {showCredits && (
+            <button
+              onClick={() => navigate(hasBundles ? "/buy-credits" : "/plan")}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-dark-100 dark:hover:bg-dark-300/10"
+              title="Usage credits"
+            >
+              <BoltIcon className="size-4 text-primary-600 dark:text-primary-400" />
+              <span>{tenantCredits.toLocaleString()}</span>
+            </button>
+          )}
+
           {/* Messages bell */}
           <Link
             to="/messages"
@@ -408,27 +477,19 @@ export default function AppLayout() {
             </div>
           </header>
 
-          {/* Sidebar nav */}
+          {/* Sidebar nav — flat list from branding.navItems or defaults.
+              No group titles (matches original lastsaas pattern). */}
           <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-2 py-4">
-            {navGroups.map((group) => (
-              <div key={group.title} className="pt-3">
-                <div className="px-4 pb-1">
-                  <span className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-dark-300">
-                    {group.title}
-                  </span>
-                </div>
-                {group.items.map((item) => (
-                  <AppNavItem
-                    key={item.path}
-                    item={item}
-                    pathname={location.pathname}
-                    unreadCount={
-                      item.path === "/messages" ? unreadCount : 0
-                    }
-                    onNavigate={() => lgAndDown && closeSidebar()}
-                  />
-                ))}
-              </div>
+            {navItems.map((item) => (
+              <AppNavItem
+                key={item.path}
+                item={item}
+                pathname={location.pathname}
+                unreadCount={
+                  item.path === "/messages" ? unreadCount : 0
+                }
+                onNavigate={() => lgAndDown && closeSidebar()}
+              />
             ))}
           </nav>
         </div>
