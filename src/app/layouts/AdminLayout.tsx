@@ -288,10 +288,10 @@ export default function AdminLayout() {
           </header>
 
           {/* Sidebar nav */}
-          <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          <nav className="hide-scrollbar flex-1 space-y-1 overflow-y-auto px-2 py-4">
             {navGroups.map((group) => (
               <div key={group.title} className="pt-3">
-                <div className="px-3 pb-1">
+                <div className="px-4 pb-1">
                   <span className="text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-dark-300">
                     {group.title}
                   </span>
@@ -348,7 +348,7 @@ function AdminNavItem({
     : isRouteActive(item.path, pathname);
 
   return (
-    <div className="relative flex px-3">
+    <div className="relative flex px-1">
       <NavLink
         to={item.path}
         onClick={onNavigate}
