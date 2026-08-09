@@ -1,7 +1,13 @@
 import { ServerIcon } from "@heroicons/react/24/outline";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import clsx from "clsx";
+import { Box, Badge } from "@/components/ui";
 import type { SystemNode } from "@/@types/lastsaas";
+
+// ----------------------------------------------------------------------
+// Node cards — Tailux CRM-Analytics ProjectCard pattern:
+// Box with colored left border (border-l-this), Badge for status,
+// metric rows below. No ad-hoc background-color soup.
+// ----------------------------------------------------------------------
 
 interface NodeCardsProps {
   nodes: SystemNode[];
@@ -22,43 +28,32 @@ function timeAgo(dateStr: string): string {
 export default function NodeCards({ nodes }: NodeCardsProps) {
   if (nodes.length === 0) {
     return (
-      <Card className="p-8 text-center text-gray-500 dark:text-dark-300">
+      <Box className="p-8 text-center text-gray-500 dark:text-dark-300">
         No nodes registered yet. Metrics will appear after the first
         collection cycle (~60s).
-      </Card>
+      </Box>
     );
   }
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {nodes.map((node) => (
-        <Card key={node.id} className="p-5">
-          <div className="flex items-start gap-3">
-            <div
-              className={`flex size-10 items-center justify-center rounded-xl ${
-                node.status === "active"
-                  ? "bg-success/15"
-                  : "bg-warning/15"
-              }`}
-            >
-              <ServerIcon
-                className={`size-5 ${
-                  node.status === "active"
-                    ? "text-success dark:text-success-light"
-                    : "text-warning"
-                }`}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate font-medium text-gray-900 dark:text-dark-50">
+      {nodes.map((node) => {
+        const isActive = node.status === "active";
+        const color = isActive ? "success" : "warning";
+        return (
+          <Box
+            key={node.id}
+            className={clsx(
+              `this:${color}`,
+              "border-l-this dark:border-l-this-light flex flex-col justify-between border-4 border-transparent px-4 py-3",
+            )}
+          >
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-base font-medium text-gray-800 dark:text-dark-100">
                   {node.hostname}
-                </span>
-                <Badge
-                  color={node.status === "active" ? "success" : "warning"}
-                  variant="soft"
-                  className="capitalize"
-                >
+                </p>
+                <Badge color={color} variant="outlined" className="capitalize shrink-0">
                   {node.status}
                 </Badge>
               </div>
@@ -66,35 +61,28 @@ export default function NodeCards({ nodes }: NodeCardsProps) {
                 {node.machineId}
               </p>
             </div>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-dark-300">
-            <div>
-              Version:{" "}
-              <span className="text-gray-700 dark:text-dark-200">
-                {node.version}
-              </span>
+
+            <div className="mt-4 grid grid-cols-2 gap-1 text-xs text-gray-500 dark:text-dark-300">
+              <div>
+                <span className="text-gray-400 dark:text-dark-400">Version:</span>{" "}
+                <span className="text-gray-700 dark:text-dark-200">{node.version}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 dark:text-dark-400">Go:</span>{" "}
+                <span className="text-gray-700 dark:text-dark-200">{node.goVersion}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 dark:text-dark-400">Last seen:</span>{" "}
+                <span className="text-gray-700 dark:text-dark-200">{timeAgo(node.lastSeen)}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 dark:text-dark-400">Up since:</span>{" "}
+                <span className="text-gray-700 dark:text-dark-200">{timeAgo(node.startedAt)}</span>
+              </div>
             </div>
-            <div>
-              Go:{" "}
-              <span className="text-gray-700 dark:text-dark-200">
-                {node.goVersion}
-              </span>
-            </div>
-            <div>
-              Last seen:{" "}
-              <span className="text-gray-700 dark:text-dark-200">
-                {timeAgo(node.lastSeen)}
-              </span>
-            </div>
-            <div>
-              Up since:{" "}
-              <span className="text-gray-700 dark:text-dark-200">
-                {timeAgo(node.startedAt)}
-              </span>
-            </div>
-          </div>
-        </Card>
-      ))}
+          </Box>
+        );
+      })}
     </div>
   );
 }

@@ -42,12 +42,12 @@ function formatTime(ts: string): string {
 function tooltipStyle() {
   return {
     contentStyle: {
-      backgroundColor: "#0f172a",
-      border: "1px solid #1e293b",
+      backgroundColor: "#ffffff",
+      border: "1px solid #e5e7eb",
       borderRadius: "8px",
       fontSize: "12px",
     },
-    labelStyle: { color: "#94a3b8" },
+    labelStyle: { color: "#6b7280" },
   };
 }
 
@@ -171,8 +171,8 @@ function aggregateByTimestamp(metrics: SystemMetric[]): AggregatedMetric[] {
   );
 }
 
-const gridStroke = "#1e293b";
-const axisFill = "#64748b";
+const gridStroke = "#e5e7eb";
+const axisFill = "#9ca3af";
 
 export default function MetricsCharts({
   metrics,
@@ -306,7 +306,7 @@ export default function MetricsCharts({
       <ChartCard title="CPU Usage %">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis
               domain={[0, 100]}
@@ -322,7 +322,7 @@ export default function MetricsCharts({
       <ChartCard title="Memory Usage %">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis
               domain={[0, 100]}
@@ -338,7 +338,7 @@ export default function MetricsCharts({
       <ChartCard title="Disk Usage %">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis
               domain={[0, 100]}
@@ -354,7 +354,7 @@ export default function MetricsCharts({
       <ChartCard title="Request Count (per interval)">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis tick={{ fill: axisFill, fontSize: 11 }} />
             <Tooltip {...tt} />
@@ -367,7 +367,7 @@ export default function MetricsCharts({
       <ChartCard title="Latency (ms)">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis
               tick={{ fill: axisFill, fontSize: 11 }}
@@ -425,7 +425,7 @@ export default function MetricsCharts({
       <ChartCard title="Error Rate 5xx %">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis tick={{ fill: axisFill, fontSize: 11 }} />
             <Tooltip {...tt} />
@@ -438,7 +438,7 @@ export default function MetricsCharts({
       <ChartCard title="MongoDB Connections">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis tick={{ fill: axisFill, fontSize: 11 }} />
             <Tooltip {...tt} />
@@ -451,7 +451,7 @@ export default function MetricsCharts({
       <ChartCard title="Go Runtime">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis
               yAxisId="left"
@@ -514,7 +514,7 @@ export default function MetricsCharts({
       <ChartCard title="Stripe API Calls (per interval)">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis tick={{ fill: axisFill, fontSize: 11 }} allowDecimals={false} />
             <Tooltip {...tt} />
@@ -527,7 +527,7 @@ export default function MetricsCharts({
       <ChartCard title="Emails Sent (per interval)">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+            <CartesianGrid strokeDasharray="0" stroke={gridStroke} />
             <XAxis dataKey="time" tick={{ fill: axisFill, fontSize: 11 }} />
             <YAxis tick={{ fill: axisFill, fontSize: 11 }} allowDecimals={false} />
             <Tooltip {...tt} />

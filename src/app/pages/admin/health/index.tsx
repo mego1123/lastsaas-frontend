@@ -1,5 +1,6 @@
 // Import Dependencies
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { HeartIcon } from "@heroicons/react/24/outline";
 
 // Local Imports
@@ -22,70 +23,52 @@ import MetricsCharts from "./MetricsCharts";
 // ----------------------------------------------------------------------
 
 export default function HealthPage() {
-  const [nodes, setNodes] = useState<SystemNode[]>([]);
-  const [currentMetrics, setCurrentMetrics] = useState<SystemMetric[]>([]);
-  const [historicalMetrics, setHistoricalMetrics] = useState<SystemMetric[]>(
-    [],
-  );
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
   const [filterMode, setFilterMode] = useState<NodeFilterMode>("aggregate");
   const [selectedNode, setSelectedNode] = useState("");
-  const [integrations, setIntegrations] = useState<IntegrationCheck[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetchCurrent = useCallback(async () => {
-    try {
-      const [nodesData, currentData, intData] = await Promise.all([
-        adminApi.listHealthNodes(),
-        adminApi.getHealthCurrent(),
-        adminApi.getHealthIntegrations(),
-      ]);
-      setNodes(nodesData.nodes);
-      setCurrentMetrics(currentData.metrics);
-      setIntegrations(intData.integrations);
-      if (!selectedNode && nodesData.nodes.length > 0) {
-        setSelectedNode(nodesData.nodes[0].machineId);
-      }
-    } catch {
-      // silently ignore
-    }
-  }, [selectedNode]);
+  // React Query — current data (short staleTime for monitoring)
+  const { data: nodesData, isLoading: nodesLoading } = useQuery({
+    queryKey: ["admin", "health", "nodes"],
+    queryFn: () => adminApi.listHealthNodes(),
+    staleTime: 15 * 1000,
+  });
+  const nodes: SystemNode[] = nodesData?.nodes ?? [];
 
-  const fetchHistorical = useCallback(async () => {
-    try {
+  const { data: currentData } = useQuery({
+    queryKey: ["admin", "health", "current"],
+    queryFn: () => adminApi.getHealthCurrent(),
+    staleTime: 15 * 1000,
+  });
+  const currentMetrics: SystemMetric[] = currentData?.metrics ?? [];
+
+  const { data: intData } = useQuery({
+    queryKey: ["admin", "health", "integrations"],
+    queryFn: () => adminApi.getHealthIntegrations(),
+    staleTime: 30 * 1000,
+  });
+  const integrations: IntegrationCheck[] = intData?.integrations ?? [];
+
+  // Historical metrics — depends on filters
+  const { data: histData } = useQuery({
+    queryKey: ["admin", "health", "metrics", timeRange, filterMode, selectedNode],
+    queryFn: () => {
       const params: { node?: string; range?: string } = { range: timeRange };
       if (filterMode === "single" && selectedNode) {
         params.node = selectedNode;
       }
-      const data = await adminApi.getHealthMetrics(params);
-      setHistoricalMetrics(data.metrics);
-    } catch {
-      // silently ignore
-    }
-  }, [timeRange, filterMode, selectedNode]);
+      return adminApi.getHealthMetrics(params);
+    },
+    staleTime: 15 * 1000,
+  });
+  const historicalMetrics: SystemMetric[] = histData?.metrics ?? [];
 
-  // Initial load
-  useEffect(() => {
-    Promise.all([fetchCurrent(), fetchHistorical()]).finally(() =>
-      setLoading(false),
-    );
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Auto-select first node when nodes load
+  if (!selectedNode && nodes.length > 0) {
+    setSelectedNode(nodes[0].machineId);
+  }
 
-  // Refetch historical when filters change
-  useEffect(() => {
-    if (!loading) void fetchHistorical();
-  }, [timeRange, filterMode, selectedNode]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-refresh every 60s (pauses when tab is in background)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        void fetchCurrent();
-        void fetchHistorical();
-      }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [fetchCurrent, fetchHistorical]);
+  const loading = nodesLoading;
 
   if (loading) {
     return (
@@ -119,10 +102,10 @@ export default function HealthPage() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
           <NodeCards nodes={nodes} />
-          <IntegrationsPanel integrations={integrations} />
           <CurrentStatusPanel metrics={currentMetrics} />
+          <IntegrationsPanel integrations={integrations} />
           <TimeRangeSelector
             timeRange={timeRange}
             onTimeRangeChange={setTimeRange}

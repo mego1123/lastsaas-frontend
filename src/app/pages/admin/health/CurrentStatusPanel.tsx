@@ -1,11 +1,20 @@
+import {
+  CpuChipIcon,
+  CircleStackIcon,
+  ServerStackIcon,
+  ArrowTrendingUpIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { Card } from "@/components/ui/Card";
 import type { SystemMetric } from "@/@types/lastsaas";
-import {
-  formatPercent,
-  formatMs,
-  statusColor,
-  statusBg,
-} from "./formatters";
+import { formatPercent, formatMs } from "./formatters";
+
+// ----------------------------------------------------------------------
+// Statistics tiles — Tailux CRM-Analytics pattern:
+// Uniform Card, number top-left, colored icon top-right, label below.
+// No ad-hoc background tints.
+// ----------------------------------------------------------------------
 
 interface CurrentStatusPanelProps {
   metrics: SystemMetric[];
@@ -16,11 +25,11 @@ function avg(values: number[]): number {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-interface StatusCard {
+interface StatTile {
   label: string;
   value: string;
-  color: string;
-  bg: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  color: "primary" | "success" | "warning" | "error" | "info" | "secondary";
 }
 
 export default function CurrentStatusPanel({
@@ -34,7 +43,6 @@ export default function CurrentStatusPanel({
     );
   }
 
-  // Each metric should have cpu/memory/disk/http — guard with optional chaining
   const cpuValues = metrics
     .map((m) => m.cpu?.usagePercent)
     .filter((v): v is number => typeof v === "number");
@@ -61,57 +69,38 @@ export default function CurrentStatusPanel({
   const p95Avg = avg(p95Values);
   const err5xxAvg = avg(err5xxValues);
 
-  const cards: StatusCard[] = [
-    {
-      label: "CPU",
-      value: formatPercent(cpuAvg),
-      color: statusColor(cpuAvg, 70, 90),
-      bg: statusBg(cpuAvg, 70, 90),
-    },
-    {
-      label: "Memory",
-      value: formatPercent(memAvg),
-      color: statusColor(memAvg, 75, 90),
-      bg: statusBg(memAvg, 75, 90),
-    },
-    {
-      label: "Disk",
-      value: formatPercent(diskAvg),
-      color: statusColor(diskAvg, 80, 95),
-      bg: statusBg(diskAvg, 80, 95),
-    },
-    {
-      label: "Requests",
-      value: `${totalRequests}`,
-      color: "text-primary-500 dark:text-primary-400",
-      bg: "bg-primary-500/15",
-    },
-    {
-      label: "Latency p95",
-      value: formatMs(p95Avg),
-      color: statusColor(p95Avg, 200, 1000),
-      bg: statusBg(p95Avg, 200, 1000),
-    },
-    {
-      label: "Error 5xx",
-      value: formatPercent(err5xxAvg),
-      color: statusColor(err5xxAvg, 1, 5),
-      bg: statusBg(err5xxAvg, 1, 5),
-    },
+  // Determine color based on threshold
+  const cpuColor = cpuAvg > 90 ? "error" : cpuAvg > 70 ? "warning" : "success";
+  const memColor = memAvg > 90 ? "error" : memAvg > 75 ? "warning" : "success";
+  const diskColor = diskAvg > 95 ? "error" : diskAvg > 80 ? "warning" : "success";
+  const latColor = p95Avg > 1000 ? "error" : p95Avg > 200 ? "warning" : "success";
+  const errColor = err5xxAvg > 5 ? "error" : err5xxAvg > 1 ? "warning" : "success";
+
+  const tiles: StatTile[] = [
+    { label: "CPU", value: formatPercent(cpuAvg), Icon: CpuChipIcon, color: cpuColor },
+    { label: "Memory", value: formatPercent(memAvg), Icon: CircleStackIcon, color: memColor },
+    { label: "Disk", value: formatPercent(diskAvg), Icon: ServerStackIcon, color: diskColor },
+    { label: "Requests", value: `${totalRequests}`, Icon: ArrowTrendingUpIcon, color: "primary" },
+    { label: "Latency p95", value: formatMs(p95Avg), Icon: ClockIcon, color: latColor },
+    { label: "Error 5xx", value: formatPercent(err5xxAvg), Icon: ExclamationTriangleIcon, color: errColor },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          className={`rounded-lg border border-gray-200 p-4 text-center dark:border-dark-600 ${card.bg}`}
-        >
-          <p className="mb-1 text-xs text-gray-500 dark:text-dark-300">
-            {card.label}
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-6">
+      {tiles.map((tile) => (
+        <Card key={tile.label} className="p-3 lg:p-4">
+          <div className="flex justify-between gap-1">
+            <p className="text-xl font-semibold text-gray-800 dark:text-dark-100">
+              {tile.value}
+            </p>
+            <tile.Icon
+              className={`this:${tile.color} size-5 text-this dark:text-this-light`}
+            />
+          </div>
+          <p className="mt-1 text-xs-plus text-gray-500 dark:text-dark-300">
+            {tile.label}
           </p>
-          <p className={`text-xl font-semibold ${card.color}`}>{card.value}</p>
-        </div>
+        </Card>
       ))}
     </div>
   );
